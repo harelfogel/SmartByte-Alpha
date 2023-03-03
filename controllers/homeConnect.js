@@ -40,19 +40,21 @@ const homeConnectToken = async (req, res) => {
         // const redirectURI = 'http://localhost:8080/homeConnect/callback';
         const authEndpoint = 'https://api.home-connect.com/security/oauth/token';
 
-        const response = await axios.post('https://api.home-connect.com/security/oauth/token', {
-                grant_type: 'authorization_code',
-                code,
-                client_id: clientId,
-                client_secret: clientSecret,
-                // redirect_uri: redirectURI 
-            },
-            {
-            headers:{
-                'Content-Type': 'application/x-www-form-urlencoded',
-            }
-        })
-        console.log("response", response.data)
+        console.log({code})
+
+        // const response = await axios.post('https://api.home-connect.com/security/oauth/token', {
+        //         grant_type: 'authorization_code',
+        //         code,
+        //         client_id: clientId,
+        //         client_secret: clientSecret,
+        //         // redirect_uri: redirectURI 
+        //     },
+        //     {
+        //     headers:{
+        //         'Content-Type': 'application/x-www-form-urlencoded',
+        //     }
+        // })
+        // console.log("response", response.data)
     // }
     // catch(err) {
     //     console.log("ERR: Can't get token. " + err.message)

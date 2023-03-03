@@ -5,6 +5,7 @@ const express = require('express');
 
 const { json } = require('express');
 const { homeConnectAuth, homeConnectToken } = require('./controllers/homeConnect.js');
+const { turnOnWaterHeater } = require('./controllers/tuya.js');
 const server = express();
 const PORT = 8080;
 server.use(express.json());
@@ -35,6 +36,11 @@ server.get('/homeConnect/callback', (req,res) => {
     // console.log("callback", req.query)
     homeConnectToken(req, res);
     res.json({message: 'token'})
+})
+
+server.get('/tuya', (req,res) => {
+    turnOnWaterHeater();
+    res.json({message: 'Welcome to tuya'})
 })
 
 /* Start listening at your defined PORT */
