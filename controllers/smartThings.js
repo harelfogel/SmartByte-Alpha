@@ -13,14 +13,23 @@ module.exports = getClientDetails = async () => {
         command: 'on',
         arguments: []
     };
-    stClient.devices.executeCommand(deviceId, { commands: [{ component: commandObj.component, capability: commandObj.capability, command: commandObj.command, arguments: commandObj.arguments }] })
-        .then((res) => {
-            console.log('im in res');
-            console.log(res);
-        })
-        .catch((err) => {
-            console.error(err);
-        });
+    stClient.devices.executeCommand(deviceId, { 
+        commands: [
+            { 
+                component: commandObj.component, 
+                capability: commandObj.capability, 
+                command: commandObj.command, 
+                arguments: commandObj.arguments
+            }
+        ] 
+    })
+    .then((res) => {
+        console.log('im in res');
+        console.log(res);
+    })
+    .catch((err) => {
+        console.error(err);
+    });
 
-        return stClient.devices; 
+    return stClient.devices; 
 } 
