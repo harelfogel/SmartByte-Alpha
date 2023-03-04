@@ -5,6 +5,7 @@ const express = require('express');
 
 const { json } = require('express');
 const { homeConnectAuth, homeConnectToken } = require('./controllers/homeConnect.js');
+const { smartThingsGetDevices, switchWasherWater } = require('./controllers/smartThings2.js');
 const server = express();
 const PORT = 8080;
 server.use(express.json());
@@ -36,6 +37,27 @@ server.get('/homeConnect/callback', (req,res) => {
     homeConnectToken(req, res);
     res.json({message: 'token'})
 })
+
+
+
+server.get('/smartthings2/devices', async (req, res) => {
+    const deviceId = req.query.deviceId || '';
+    console.log("Yovel id", deviceId)
+    const response = await smartThingsGetDevices(deviceId);
+    res.json(response)
+})
+
+
+
+server.post('/smartthings2/devices/:deviceId/switch', async (req, res) => {
+    console.log("SWITCH")
+    const deviceId = req.url.split('/')[3];
+    const status = req.body.status;
+    switchWasherWater(deviceId,status)
+    res.json({})
+})
+
+
 
 /* Start listening at your defined PORT */
 server.listen(PORT, () => console.log(`Server is up and running on port ${PORT}`));
