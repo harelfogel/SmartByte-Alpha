@@ -18,6 +18,10 @@
     "express": "^4.18.2",
     "nodemon": "^2.0.20",
     "open": "^8.4.2",
-    "smartthings-node": "0.0.4"
+    "smartthings-node": "0.0.4",
+    "crypto": "^1.0.1",
+    "qs": "^6.11.1",
+    "request": "^2.88.2",
+    "tuyapi": "github:codetheweb/tuyapi"
   }
 }
