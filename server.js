@@ -1,11 +1,10 @@
-require('dotenv').config();
-const getClientDetails= require('./controllers/smartthings.js');
-const express = require('express');
-
-
-const { json } = require('express');
-const { homeConnectAuth, homeConnectToken } = require('./controllers/homeConnect.js');
-const { smartThingsGetDevices, switchWasherWater } = require('./controllers/smartThings2.js');
+import express from 'express';
+import {
+    homeConnectAuth,
+    homeConnectToken
+} from './controllers/homeConnect.js'
+import { smartThingsGetDevices, switchWasherWater } from './controllers/smartThings2.js';
+import {testFn} from './common/utils.js';
 const server = express();
 const PORT = 8080;
 server.use(express.json());
@@ -22,10 +21,10 @@ server.get('/',function(req,res){
 })
 
 //Handle get requests
-server.get('/smartthings',function(req,res){
-    getClientDetails();
-    res.json({message:`Welcome to smartthings details`});
-});
+// server.get('/smartthings',function(req,res){
+//     getClientDetails();
+//     res.json({message:`Welcome to smartthings details`});
+// });
 
 server.get('/homeConnect', (req,res) => {
      homeConnectAuth();
@@ -56,6 +55,8 @@ server.post('/smartthings2/devices/:deviceId/switch', async (req, res) => {
     switchWasherWater(deviceId,status)
     res.json({})
 })
+
+
 
 
 
