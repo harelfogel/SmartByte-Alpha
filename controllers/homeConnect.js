@@ -1,5 +1,5 @@
-const { default: axios } = require("axios");
-const open = require('open');
+import axios from "axios";
+import open from "open";
 
     const clientId = '54B2557BFC13E82EADBEA23FAD24291B8937E461D6839FF9B3C2817B6EB5E7DF';
     const clientSecret = 'B10343C22D0393B25E6DBD26E776CE9CF151CFAEBB24E2F383A8AA70DEAEB392';
@@ -7,7 +7,7 @@ const open = require('open');
 
 
 
-const homeConnectAuth =  () => {
+export const homeConnectAuth =  () => {
     console.log("Home Connect");
 
     // const clientId = '54B2557BFC13E82EADBEA23FAD24291B8937E461D6839FF9B3C2817B6EB5E7DF';
@@ -31,7 +31,7 @@ const homeConnectAuth =  () => {
     // )
 }
 
-const homeConnectToken = async (req, res) => {
+export const homeConnectToken = async (req, res) => {
     // try {
         console.log("Token", req.query)
         const {code, state} = req.query;
@@ -59,10 +59,10 @@ const homeConnectToken = async (req, res) => {
     // }
 }
 
-module.exports = {
-    homeConnectAuth,
-    homeConnectToken
-}
+// module.exports = {
+//     homeConnectAuth,
+//     homeConnectToken
+// }
 
 
 // eyJ4LXJlZyI6IkVVIiwieC1lbnYiOiJQUkQiLCJjcmVmIjoiNTRCMjU1N0IiLCJ0b2tlbiI6IjE0N2FlNzBkLWU0YzQtNDVjNC04OGQ2LWU1NWFiZGJlYzEzNyIsImNsdHkiOiJwcml2YXRlIn0

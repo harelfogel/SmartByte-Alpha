@@ -1,11 +1,15 @@
 
 
-const { default: axios } = require("axios");
+// const { default: axios } = require("axios");
+
+import axios from "axios";
+
+
 
 const TOKEN = process.env.SMARTTHINGS_TOKEN;
 const URL = 'https://api.smartthings.com/v1'
 
-const smartThingsGetDevices = async (deviceId) => {
+export const smartThingsGetDevices = async (deviceId) => {
     try {
         const response = await axios.get(`${URL}/devices/${deviceId}`, {
             headers: {
@@ -21,7 +25,7 @@ const smartThingsGetDevices = async (deviceId) => {
     }
 }
 
-const switchWasherWater = async (deviceId, status) => {
+export const switchWasherWater = async (deviceId, status) => {
     const command = {
         component: 'main',
         capability: 'switch',
@@ -43,7 +47,7 @@ const switchWasherWater = async (deviceId, status) => {
     }
 }
 
-module.exports = {
-    smartThingsGetDevices,
-    switchWasherWater
-}
+// module.exports = {
+//     smartThingsGetDevices,
+//     switchWasherWater
+// }
