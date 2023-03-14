@@ -1,5 +1,7 @@
 require('dotenv').config();
-const getClientDetails= require('./controllers/smartthings.js');
+const getSmartThingsDetails= require('./controllers/smartthings.js');
+const getToken= require('./controllers/tuya.js');
+//const getHOnClientDetails= require('./controllers/hOn.js');
 const express = require('express');
 
 
@@ -9,6 +11,7 @@ const { smartThingsGetDevices, switchWasherWater } = require('./controllers/smar
 const server = express();
 const PORT = 8080;
 server.use(express.json());
+
 
 /* Handle POST requests */
 server.post('/', function (req, res, next) {
@@ -23,7 +26,7 @@ server.get('/',function(req,res){
 
 //Handle get requests
 server.get('/smartthings',function(req,res){
-    getClientDetails();
+    getSmartThingsDetails();
     res.json({message:`Welcome to smartthings details`});
 });
 
@@ -58,6 +61,11 @@ server.post('/smartthings2/devices/:deviceId/switch', async (req, res) => {
 })
 
 
+//Handle get requests
+server.get('/tuya',function(req,res){
+    getToken();
+    res.json({message:`Welcome to tuya details`});
+});
 
 /* Start listening at your defined PORT */
 server.listen(PORT, () => console.log(`Server is up and running on port ${PORT}`));
