@@ -2,6 +2,7 @@ require('dotenv').config();
 const getClientDetails= require('./controllers/smartthings.js');
 const express = require('express');
 
+const { switchAcState } = require('./controllers/sensibo.js');
 
 const { json } = require('express');
 const { homeConnectAuth, homeConnectToken } = require('./controllers/homeConnect.js');
@@ -36,6 +37,10 @@ server.get('/homeConnect/callback', (req,res) => {
     // console.log("callback", req.query)
     homeConnectToken(req, res);
     res.json({message: 'token'})
+})
+
+server.get('/sensibo', async (req,res) => {
+    await switchAcState();
 })
 
 
