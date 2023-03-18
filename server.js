@@ -65,7 +65,7 @@ server.get('/sensibo', async (req,res) => {
 
 
 
-server.get('/smartthings2/devices', async (req, res) => {
+server.get('/smartthings/v2/devices', async (req, res) => {
     const deviceId = req.query.deviceId || '';
     console.log("Yovel id", deviceId)
     const response = await smartThingsGetDevices(deviceId);
@@ -73,10 +73,15 @@ server.get('/smartthings2/devices', async (req, res) => {
 })
 
 
+server.post('/smartthings/v2/switch', async (req,res) => {
+    console.log("smart things SWITCH", req.body.state)
 
-server.post('/smartthings2/devices/:deviceId/switch', async (req, res) => {
+    // const response = await switchWasherWater(req.body.state)
+})
+
+server.post('/smartthings/v2/devices/:deviceId/switch', async (req, res) => {
     console.log("SWITCH")
-    const deviceId = req.url.split('/')[3];
+    const deviceId = req.url.split('/')[4];
     const status = req.body.status;
     switchWasherWater(deviceId,status)
     res.json({})

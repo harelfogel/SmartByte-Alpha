@@ -15,7 +15,6 @@ const checkforUserDistance = (userLocation) => {
     }
 
     const distance = returnDistanceBetween2Coordinates(userLocation, houseLocation);
-    console.log({distance})
     return distance;
 }
 

@@ -25,10 +25,11 @@ const switchWasherWater = async (deviceId, status) => {
     const command = {
         component: 'main',
         capability: 'switch',
-        command: status,
+        command: status ? "on" : 'off',
         arguments: []
     };
         try{
+            console.log({command, deviceId})
         const response = await axios.post(`${URL}/devices/${deviceId}/commands`, {
             commands: [{ ...command }]
         },
