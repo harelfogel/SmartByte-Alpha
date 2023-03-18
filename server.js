@@ -3,13 +3,17 @@ const getClientDetails= require('./controllers/smartthings.js');
 const express = require('express');
 
 const { switchAcState } = require('./controllers/sensibo.js');
+const cors = require("cors");
 
 const { json } = require('express');
 const { homeConnectAuth, homeConnectToken } = require('./controllers/homeConnect.js');
 const { smartThingsGetDevices, switchWasherWater } = require('./controllers/smartThings2.js');
+const { checkforUserDistance } = require('./controllers/location.js');
 const server = express();
 const PORT = 8080;
 server.use(express.json());
+server.use(cors({origin: true}));
+
 
 /* Handle POST requests */
 server.post('/', function (req, res, next) {
@@ -39,8 +43,10 @@ server.get('/homeConnect/callback', (req,res) => {
     res.json({message: 'token'})
 })
 
-server.get('/sensibo', async (req,res) => {
-    await switchAcState();
+server.post('/sensibo', async (req,res) => {
+    console.log("sensibo")
+    const state = req.body.state;
+    await switchAcState(state);
 })
 
 
@@ -62,6 +68,11 @@ server.post('/smartthings2/devices/:deviceId/switch', async (req, res) => {
     res.json({})
 })
 
+server.post('/location', async (req,res) => {
+    // console.log(req.body)
+    const distance = checkforUserDistance(req.body.location);
+    res.json({distance})
+})
 
 
 /* Start listening at your defined PORT */
