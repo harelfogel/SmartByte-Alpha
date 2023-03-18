@@ -2,7 +2,7 @@ require('dotenv').config();
 const getClientDetails= require('./controllers/smartthings.js');
 const express = require('express');
 
-const { switchAcState } = require('./controllers/sensibo.js');
+const { switchAcState, getAcState } = require('./controllers/sensibo.js');
 const cors = require("cors");
 
 const { json } = require('express');
@@ -43,11 +43,25 @@ server.get('/homeConnect/callback', (req,res) => {
     res.json({message: 'token'})
 })
 
+// server.post('/sensibo', async (req,res) => {
+//     console.log("sensibo")
+//     const state = req.body.state;
+//     await switchAcState(state);
+// })
+
 server.post('/sensibo', async (req,res) => {
     console.log("sensibo")
     const state = req.body.state;
     await switchAcState(state);
+    res.json({statusCode: 200})
 })
+
+server.get('/sensibo', async (req,res) => {
+    console.log("sensibo get acState")
+    const state = await getAcState();
+    res.json({state})
+})
+
 
 
 
