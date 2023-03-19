@@ -10,7 +10,7 @@ const { homeConnectAuth, homeConnectToken } = require('./homeConnect.js');
 const { smartThingsGetDevices, switchWasherWater } = require('./smartThings2.js');
 const { checkforUserDistance } = require('./location.js');
 const server = express();
-const PORT = 8080;
+const port = process.env.PORT || 3001;
 server.use(express.json());
 server.use(cors({origin: true}));
 
@@ -92,3 +92,5 @@ server.post('/location', async (req,res) => {
     const distance = checkforUserDistance(req.body.location);
     res.json({distance})
 })
+
+app.listen(port, () => console.log(`listening on port ${port}!`));
