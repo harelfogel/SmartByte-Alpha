@@ -93,4 +93,4 @@ server.post('/location', async (req,res) => {
     res.json({distance})
 })
 
-app.listen(port, () => console.log(`listening on port ${port}!`));
+server.listen(port, () => console.log(`listening on port ${port}!`));
