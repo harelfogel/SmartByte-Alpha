@@ -2,7 +2,7 @@ require('dotenv').config();
 const getClientDetails= require('./smartThings.js');
 const express = require('express');
 
-const { switchAcState, getAcState } = require('./smartThings.js');
+const { switchAcState, getAcState } = require('./sensibo.js');
 const cors = require("cors");
 
 const { json } = require('express');
