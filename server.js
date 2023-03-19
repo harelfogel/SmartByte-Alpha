@@ -83,8 +83,8 @@ server.post('/smartthings/v2/devices/:deviceId/switch', async (req, res) => {
     console.log("SWITCH")
     const deviceId = req.url.split('/')[4];
     const status = req.body.status;
-    switchWasherWater(deviceId,status)
-    res.json({})
+    const response = await switchWasherWater(deviceId,status)
+    res.json(response.data)
 })
 
 server.post('/location', async (req,res) => {

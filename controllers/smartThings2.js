@@ -38,6 +38,7 @@ const switchWasherWater = async (deviceId, status) => {
         }})
 
         console.log("Yovel", {response: response.data.results})
+        return response;
     }
     catch(err) {
         console.log(`Can't switch status to washer water: ${err}` )
