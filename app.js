@@ -1,14 +1,14 @@
 require('dotenv').config();
-const getClientDetails= require('smartThings');
+const getClientDetails= require('./smartThings.js');
 const express = require('express');
 
-const { switchAcState, getAcState } = require('smartThings');
+const { switchAcState, getAcState } = require('./smartThings.js');
 const cors = require("cors");
 
 const { json } = require('express');
-const { homeConnectAuth, homeConnectToken } = require('homeConnect.js');
-const { smartThingsGetDevices, switchWasherWater } = require('smartThings2.js');
-const { checkforUserDistance } = require('location.js');
+const { homeConnectAuth, homeConnectToken } = require('./homeConnect.js');
+const { smartThingsGetDevices, switchWasherWater } = require('./smartThings2.js');
+const { checkforUserDistance } = require('./location.js');
 const server = express();
 const port = process.env.PORT || 3001;
 server.use(express.json());
