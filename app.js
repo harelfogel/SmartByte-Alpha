@@ -1,7 +1,7 @@
 require('dotenv').config();
 const getClientDetails= require('./smartThings.js');
 const express = require('express');
-
+const connectDB = require('./models/config');
 const { switchAcState, getAcState } = require('./sensibo.js');
 const cors = require("cors");
 
@@ -9,10 +9,15 @@ const { json } = require('express');
 const { homeConnectAuth, homeConnectToken } = require('./homeConnect.js');
 const { smartThingsGetDevices, switchWasherWater } = require('./smartThings2.js');
 const { checkforUserDistance } = require('./location.js');
+const Rule = require('./models/Rule');
+
 const server = express();
 const port = process.env.PORT || 3001;
 server.use(express.json());
 server.use(cors({origin: true}));
+
+// Connect to MongoDB
+connectDB();
 
 
 /* Handle POST requests */
@@ -20,6 +25,19 @@ server.post('/', function (req, res, next) {
     console.log(req);
     smartapp.handleHttpCallback(req, res);
 });
+
+// Define the route for adding a new rule
+server.post('/rules', async (req, res) => {
+    const { rule } = req.body;
+    try {
+      const newRule = new Rule({ rule });
+      await newRule.save();
+      res.send('Rule added successfully');
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).send('Error adding rule');
+    }
+  });
 
 //Handle get requests
 server.get('/',function(req,res){
@@ -43,11 +61,7 @@ server.get('/homeConnect/callback', (req,res) => {
     res.json({message: 'token'})
 })
 
-// server.post('/sensibo', async (req,res) => {
-//     console.log("sensibo")
-//     const state = req.body.state;
-//     await switchAcState(state);
-// })
+
 
 server.post('/sensibo', async (req,res) => {
     console.log("sensibo")
@@ -93,4 +107,4 @@ server.post('/location', async (req,res) => {
     res.json({distance})
 })
 
-server.listen(port, () => console.log(`listening on port ${port}!`));
+server.listen(port, () => console.log(`listening on port ${port}`));
