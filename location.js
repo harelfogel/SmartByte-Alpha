@@ -1,3 +1,5 @@
+const { removeSensorValueByType } = require("./common");
+const SensorValue = require("./SensorValue");
 
 
 const returnDistanceBetween2Coordinates = (first, second) => {
@@ -7,16 +9,24 @@ const returnDistanceBetween2Coordinates = (first, second) => {
 
 
 
-const checkforUserDistance = (userLocation) => {
+const checkforUserDistance = async (userLocation) => {
     const {lat, lng} = userLocation;
     const houseLocation = {
         lat: 32.0766887,
         lng: 34.8002835
     }
+    
 
     const distance = returnDistanceBetween2Coordinates(userLocation, houseLocation);
+    const value = `VAR distance = ${distance.toFixed(8)}`;
+
+    await removeSensorValueByType('distance');
+    const distanceDocument = new SensorValue({ value, sensor_type: 'distance' });
+    await Promise.all([distanceDocument.save()]);
     return distance;
 }
+
+
 
 
 module.exports = {
