@@ -110,6 +110,8 @@ server.post('/location', async (req, res) => {
     const distance = checkforUserDistance(req.body.location);
     res.json({ distance })
 })
+
+
 setInterval(() => {
     removeAllSensorValues();
     setTimeout(() => {

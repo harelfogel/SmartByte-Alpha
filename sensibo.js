@@ -43,15 +43,15 @@ const getSensiboSensors= async() =>{
 
 const parseSensorAndWriteToMongo = async () => {
   try {
-    console.log(`parseSensorAndWriteToMongo`)
+    console.log(`parseSensorAndWriteToMongo`);
     // Fetch the current temperature and humidity values
     const response = await getSensiboSensors();
     const data = response.data.result[0];
     const { temperature, humidity } = data;
     const temperatureValue = `VAR temperature=${temperature.toFixed(1)}`;
     const humidityValue = `VAR humidity=${humidity.toFixed(1)}`;
-    const temperatureDocument = new SensorValue({ value: temperatureValue });
-    const humidityDocument = new SensorValue({ value: humidityValue });
+    const temperatureDocument = new SensorValue({ value: temperatureValue, sensor_type: 'temperature' });
+    const humidityDocument = new SensorValue({ value: humidityValue, sensor_type: 'humidity' });
     await Promise.all([temperatureDocument.save(), humidityDocument.save()]);
 
     // console.log(`Temperature: ${temperature} Humidity: ${humidity} saved to database.`);
@@ -59,6 +59,7 @@ const parseSensorAndWriteToMongo = async () => {
     console.error(error);
   }
 };
+
 
 
 const removeAllSensorValues = async () => {
