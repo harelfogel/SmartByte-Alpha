@@ -1,7 +1,7 @@
 require('dotenv').config();
 const getClientDetails = require('./smartThings.js');
 const express = require('express');
-const connectDB = require('./models/config');
+const connectDB = require('./config');
 const { switchAcState, getAcState, getSensiboSensors, parseSensorAndWriteToMongo, removeAllSensorValues } = require('./sensibo.js');
 const cors = require("cors");
 
@@ -9,7 +9,8 @@ const { json } = require('express');
 const { homeConnectAuth, homeConnectToken } = require('./homeConnect.js');
 const { smartThingsGetDevices, switchWasherWater } = require('./smartThings2.js');
 const { checkforUserDistance } = require('./location.js');
-const Rule = require('./models/Rule');
+const Rule = require('./Rule');
+const { removeSensorValueByType, getFunctionsFromDB, getHeaterState } = require('./common.js');
 
 const server = express();
 const port = process.env.PORT || 3001;
@@ -107,17 +108,22 @@ server.post('/smartthings/v2/devices/:deviceId/switch', async (req, res) => {
 
 server.post('/location', async (req, res) => {
     // console.log(req.body)
-    const distance = checkforUserDistance(req.body.location);
+    const distance = await checkforUserDistance(req.body.location);
     res.json({ distance })
 })
 
+getHeaterState();
 
-setInterval(() => {
-    removeAllSensorValues();
-    setTimeout(() => {
-        parseSensorAndWriteToMongo();
-    }, 15000);
-},
-    40000);
+
+setInterval(async() => {
+    // removeAllSensorValues();
+    await removeSensorValueByType('temperature');
+    await removeSensorValueByType('humidity');
+    await parseSensorAndWriteToMongo();
+    await getFunctionsFromDB();
+
+}, 20000);
+
+
 
 server.listen(port, () => console.log(`listening on port ${port}`));
