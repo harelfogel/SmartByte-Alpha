@@ -11,6 +11,7 @@ const { smartThingsGetDevices, switchWasherWater } = require('./smartThings2.js'
 const { checkforUserDistance } = require('./location.js');
 const Rule = require('./Rule');
 const { removeSensorValueByType, getFunctionsFromDB, getHeaterState } = require('./common.js');
+const { insertRuleToDB } = require('./rules.service.js');
 
 const server = express();
 const port = process.env.PORT || 3001;
@@ -29,15 +30,10 @@ server.post('/', function (req, res, next) {
 
 // Define the route for adding a new rule
 server.post('/rules', async (req, res) => {
-    const { rule } = req.body;
-    try {
-        const newRule = new Rule({ rule });
-        await newRule.save();
-        res.send('Rule added successfully');
-    } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Error adding rule');
-    }
+    console.log(req.body)
+    const { rule, isStrict } = req.body;
+    const response = await insertRuleToDB(rule,isStrict);
+    res.status(response.statusCode).send(response.message)
 });
 
 //Handle get requests
@@ -112,17 +108,17 @@ server.post('/location', async (req, res) => {
     res.json({ distance })
 })
 
-getHeaterState();
+// getHeaterState();
 
 
-setInterval(async() => {
-    // removeAllSensorValues();
-    await removeSensorValueByType('temperature');
-    await removeSensorValueByType('humidity');
-    await parseSensorAndWriteToMongo();
-    await getFunctionsFromDB();
+// setInterval(async() => {
+//     // removeAllSensorValues();
+//     await removeSensorValueByType('temperature');
+//     await removeSensorValueByType('humidity');
+//     await parseSensorAndWriteToMongo();
+//     await getFunctionsFromDB();
 
-}, 20000);
+// }, 20000);
 
 
 
