@@ -2,6 +2,20 @@ const Rule = require("./Rule");
 
 
 
+const checkForDevices = (rule) => {
+    const devices = [];
+    if(/\b(ac)\b/i.test(rule))
+        devices.push('ac');
+    if(/\b(heater)\b/i.test(rule))
+        devices.push('heater');
+    if(/\b(dishwasher)\b/i.test(rule))
+        devices.push('dishwasher');
+    return devices;
+}
+
+const decideOnState = (rule) => {
+    return (/\b(off)\b/i.test(rule) ? 'on' : 'off')
+}
 
 
 
@@ -9,20 +23,10 @@ const Rule = require("./Rule");
 const insertRuleToDB = async (rule,isStrict) => {
     console.log({rule})
     try {
-        const devices = [];
-        if(/\b(ac)\b/i.test(rule))
-            devices.push('ac');
-        if(/\b(heater)\b/i.test(rule))
-            devices.push('heater');
-        if(/\b(dishwasher)\b/i.test(rule))
-            devices.push('dishwasher');
+        const devices = checkForDevices(rule);
 
         let parserRule = rule.split("THEN"); 
-        let state;
-        if(/\b(on)\b/i.test(rule))  
-            state = 'off';         
-        else if(/\b(off)\b/i.test(rule))  
-            state = 'on';  
+        const state = decideOnState(rule);
 
         devices.map(device => {
             parserRule[0] = parserRule[0] + `AND ${device}==${state} `
