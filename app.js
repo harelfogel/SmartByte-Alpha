@@ -12,6 +12,7 @@ const { checkforUserDistance } = require('./location.js');
 const Rule = require('./Rule');
 const { removeSensorValueByType, getFunctionsFromDB, getHeaterState } = require('./common.js');
 const { insertRuleToDB } = require('./rules.service.js');
+const { switchHeaterState } = require('./heaterController.js');
 
 const server = express();
 const port = process.env.PORT || 3001;
@@ -78,7 +79,11 @@ server.get('/temperature', async (req, res) => {
     res.json(response.data.result);
 })
 
-
+server.post('/heater', async (req, res) => {
+    const {value} = req.body;
+    const response = await switchHeaterState(value);
+    res.json({ response })
+})
 
 
 server.get('/smartthings/v2/devices', async (req, res) => {
