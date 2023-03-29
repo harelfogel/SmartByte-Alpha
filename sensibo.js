@@ -1,4 +1,5 @@
 const { default: axios } = require("axios");
+const Device = require("./Device");
 const SensorValue = require('./SensorValue');
 
 const switchAcState = async (state) => {
@@ -12,10 +13,14 @@ const switchAcState = async (state) => {
                "on": state
            }
         })
-        console.log("AC changed ", state)
+        // console.log("AC changed ", state)
+        await Device.updateOne({device_id: '9EimtVDZ'}, {state: state ? 'on' : 'off'});
+
+
     } catch(err){
         console.log(err+"Ivalid read from Sensibo");
     }
+
 }
 
 
