@@ -85,7 +85,6 @@ server.post('/heater', async (req, res) => {
     res.json({ response })
 })
 
-
 server.get('/smartthings/v2/devices', async (req, res) => {
     const deviceId = req.query.deviceId || '';
     const response = await smartThingsGetDevices(deviceId);
@@ -100,7 +99,6 @@ server.post('/smartthings/v2/switch', async (req, res) => {
 })
 
 server.post('/smartthings/v2/devices/:deviceId/switch', async (req, res) => {
-    console.log("SWITCH")
     const deviceId = req.url.split('/')[4];
     const status = req.body.status;
     const response = await switchWasherWater(deviceId, status)
