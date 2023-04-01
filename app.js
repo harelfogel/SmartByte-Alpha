@@ -13,6 +13,7 @@ const Rule = require('./Rule');
 const { removeSensorValueByType, getFunctionsFromDB, getHeaterState } = require('./common.js');
 const { insertRuleToDB } = require('./rules.service.js');
 const { switchHeaterState } = require('./heaterController.js');
+const { getDevices } = require('./devices.service.js');
 
 const server = express();
 const port = process.env.PORT || 3001;
@@ -111,17 +112,22 @@ server.post('/location', async (req, res) => {
     res.json({ distance })
 })
 
+server.get('/devices',async (req,res) => {
+   const devices = await getDevices();
+    return res.json(devices);
+})
+
 // getHeaterState();
 
 
-// setInterval(async() => {
-//     // removeAllSensorValues();
-//     await removeSensorValueByType('temperature');
-//     await removeSensorValueByType('humidity');
-//     await parseSensorAndWriteToMongo();
-//     await getFunctionsFromDB();
+setInterval(async() => {
+    // removeAllSensorValues();
+    await removeSensorValueByType('temperature');
+    await removeSensorValueByType('humidity');
+    await parseSensorAndWriteToMongo();
+    await getFunctionsFromDB();
 
-// }, 20000);
+}, 20000);
 
 
 

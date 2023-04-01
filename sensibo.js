@@ -4,16 +4,14 @@ const SensorValue = require('./SensorValue');
 
 const switchAcState = async (state) => {
     console.log("switchAcState")
-    const currentState = await getAcState();
-    if(currentState.on == state)
-        return;
+
     try{
         const response= await axios.post(`https://home.sensibo.com/api/v2/pods/${process.env.SENSIBO_DEVICE_ID}/acStates?apiKey=${process.env.SENSIBO_API_KEY}`,{
            "acState":{
                "on": state
            }
         })
-        // console.log("AC changed ", state)
+        console.log("AC changed ", state)
         await Device.updateOne({device_id: '9EimtVDZ'}, {state: state ? 'on' : 'off'});
 
 
@@ -59,6 +57,7 @@ const parseSensorAndWriteToMongo = async () => {
     const humidityValue = `VAR humidity=${humidity.toFixed(1)}`;
     const temperatureDocument = new SensorValue({ value: temperatureValue, sensor_type: 'temperature' });
     const humidityDocument = new SensorValue({ value: humidityValue, sensor_type: 'humidity' });
+    
     await Promise.all([temperatureDocument.save(), humidityDocument.save()]);
 
     // console.log(`Temperature: ${temperature} Humidity: ${humidity} saved to database.`);
