@@ -11,7 +11,7 @@ const { smartThingsGetDevices, switchWasherWater } = require('./smartThings2.js'
 const { checkforUserDistance } = require('./location.js');
 const Rule = require('./Rule');
 const { removeSensorValueByType, getFunctionsFromDB, getHeaterState } = require('./common.js');
-const { insertRuleToDB } = require('./rules.service.js');
+const { insertRuleToDB,getAllRules } = require('./rules.service.js');
 const { switchHeaterState } = require('./heaterController.js');
 const { getDevices } = require('./devices.service.js');
 
@@ -24,11 +24,25 @@ server.use(cors({ origin: true }));
 connectDB();
 
 
+
+//Handle get requests
+server.get('/', function (req, res) {
+    res.json({ message: `Welcome to SmartByte server` });
+})
+
 /* Handle POST requests */
 server.post('/', function (req, res, next) {
     console.log(req);
     smartapp.handleHttpCallback(req, res);
 });
+
+
+
+ // --------------------------------- Rules ---------------------------------
+server.get('/rules', async (req, res) => {
+    const response = await getAllRules();
+    res.status(response.statusCode).json(response.data);
+  });
 
 // Define the route for adding a new rule
 server.post('/rules', async (req, res) => {
@@ -38,10 +52,8 @@ server.post('/rules', async (req, res) => {
     res.status(response.statusCode).send(response.message)
 });
 
-//Handle get requests
-server.get('/', function (req, res) {
-    res.json({ message: `Welcome to SmartByte server` });
-})
+
+ // --------------------------------- SmartThings- Laundry ---------------------------------
 
 //Handle get requests
 server.get('/smartthings', function (req, res) {
@@ -61,9 +73,10 @@ server.get('/homeConnect/callback', (req, res) => {
 })
 
 
+ // --------------------------------- Sensibo- AC ---------------------------------
 
 server.post('/sensibo', async (req, res) => {
-    console.log("sensibo")
+    console.log("-----------sensibo---------------")
     const state = req.body.state;
     await switchAcState(state);
     res.json({ statusCode: 200 })
@@ -79,6 +92,9 @@ server.get('/temperature', async (req, res) => {
     const response = await getSensiboSensors();
     res.json(response.data.result);
 })
+
+
+ // --------------------------------- Tuya- Heater ---------------------------------
 
 server.post('/heater', async (req, res) => {
     const {value} = req.body;
@@ -106,11 +122,14 @@ server.post('/smartthings/v2/devices/:deviceId/switch', async (req, res) => {
     res.json(response.data)
 })
 
+ // --------------------------------- Location ---------------------------------
+
 server.post('/location', async (req, res) => {
     // console.log(req.body)
     const distance = await checkforUserDistance(req.body.location);
     res.json({ distance })
 })
+ // --------------------------------- Devices ---------------------------------
 
 server.get('/devices',async (req,res) => {
    const devices = await getDevices();
