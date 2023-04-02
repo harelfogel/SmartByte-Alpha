@@ -60,7 +60,23 @@ const backupokdInsertToDb = async (rule, isStrict) => {
 }
 
 
+const getAllRules = async () => {
+    try {
+      const rules = await Rule.find();
+      return {
+        statusCode: 200,
+        data: rules,
+      };
+    } catch (error) {
+      return {
+        statusCode: 500,
+        message: `Error fetching rules - ${error}`,
+      };
+    }
+  };
+
 
 module.exports = {
-    insertRuleToDB
+    insertRuleToDB,
+    getAllRules
 }

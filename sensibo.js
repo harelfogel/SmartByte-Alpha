@@ -4,6 +4,7 @@ const SensorValue = require('./SensorValue');
 
 const switchAcState = async (state) => {
     console.log("switchAcState")
+    console.log(state)
 
     try{
         const response= await axios.post(`https://home.sensibo.com/api/v2/pods/${process.env.SENSIBO_DEVICE_ID}/acStates?apiKey=${process.env.SENSIBO_API_KEY}`,{
@@ -16,7 +17,7 @@ const switchAcState = async (state) => {
 
 
     } catch(err){
-        console.log(err+"Ivalid read from Sensibo");
+        console.log(err+"Invalid read from Sensibo");
     }
 
 }
