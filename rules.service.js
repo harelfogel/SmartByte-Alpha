@@ -18,6 +18,7 @@ const decideOnState = (rule) => {
 const insertRuleToDB = async (rule) => {
     try {
         const newRule = new Rule({ rule });
+        newRule.id = Math.floor(10000000 + Math.random() * 90000000);
         await newRule.save();
 
         return {
@@ -76,7 +77,24 @@ const getAllRules = async () => {
   };
 
 
+  const setRuleActive = async (ruleId, isActive) => {
+    try{
+        await Rule.updateOne({id: ruleId}, {$set: {isActive: isActive}});
+        return {
+            statusCode: 200,
+            message: 'Rule updated successfully',
+        };
+    } catch (error) {
+        return {
+            statusCode: 500,
+            message: `Error updating rule - ${error}`,
+        };
+    }
+  }
+
+
 module.exports = {
     insertRuleToDB,
-    getAllRules
+    getAllRules,
+    setRuleActive
 }

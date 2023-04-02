@@ -8,6 +8,14 @@ const ruleSchema = new mongoose.Schema({
   isStrict: {
     type: Boolean,
     default: false
+  },
+  isActive: {
+    type: Boolean,
+    default: false
+  },
+  id: {
+    type: String,
+    required: true
   }
 });
 

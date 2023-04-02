@@ -11,7 +11,7 @@ const { smartThingsGetDevices, switchWasherWater } = require('./smartThings2.js'
 const { checkforUserDistance } = require('./location.js');
 const Rule = require('./Rule');
 const { removeSensorValueByType, getFunctionsFromDB, getHeaterState } = require('./common.js');
-const { insertRuleToDB,getAllRules } = require('./rules.service.js');
+const { insertRuleToDB,getAllRules, setRuleActive } = require('./rules.service.js');
 const { switchHeaterState } = require('./heaterController.js');
 const { getDevices } = require('./devices.service.js');
 
@@ -50,6 +50,13 @@ server.post('/rules', async (req, res) => {
     const { rule, isStrict } = req.body;
     const response = await insertRuleToDB(rule,isStrict);
     res.status(response.statusCode).send(response.message)
+});
+
+server.post('/rules/:id', async (req, res) => {
+    const {isActive} = req.body;
+    const id = req.params.id;
+    const response = await setRuleActive(id,isActive);
+    return res.status(response.statusCode).send(response.message);
 });
 
 
@@ -139,14 +146,14 @@ server.get('/devices',async (req,res) => {
 // getHeaterState();
 
 
-setInterval(async() => {
-    // removeAllSensorValues();
-    await removeSensorValueByType('temperature');
-    await removeSensorValueByType('humidity');
-    await parseSensorAndWriteToMongo();
-    await getFunctionsFromDB();
+// setInterval(async() => {
+//     // removeAllSensorValues();
+//     await removeSensorValueByType('temperature');
+//     await removeSensorValueByType('humidity');
+//     await parseSensorAndWriteToMongo();
+//     await getFunctionsFromDB();
 
-}, 20000);
+// }, 20000);
 
 
 
