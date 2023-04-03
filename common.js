@@ -28,10 +28,10 @@ const getFunctionsFromDB =  async () => {
 
 const activateDevices = (func) => {
     switch (func) {
-        case 'turn on ac':
+        case 'on ac':
             switchAcState(true);
             break;
-        case 'turn on heater':
+        case 'on heater':
             switchHeaterState(true);
             break;
         default:
