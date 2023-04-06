@@ -4,7 +4,6 @@ const express = require('express');
 const connectDB = require('./config');
 const { switchAcState, getAcState, getSensiboSensors, parseSensorAndWriteToMongo, removeAllSensorValues } = require('./sensibo.js');
 const cors = require("cors");
-
 const { json } = require('express');
 const { homeConnectAuth, homeConnectToken } = require('./homeConnect.js');
 const { smartThingsGetDevices, switchWasherWater } = require('./smartThings2.js');
@@ -14,7 +13,7 @@ const { removeSensorValueByType, getFunctionsFromDB, getHeaterState } = require(
 const { insertRuleToDB,getAllRules, setRuleActive } = require('./rules.service.js');
 const { switchHeaterState } = require('./heaterController.js');
 const { getDevices } = require('./devices.service.js');
-
+const { callBayesianScript } = require('./machineLearning.js');
 const server = express();
 const port = process.env.PORT || 3001;
 server.use(express.json());
@@ -142,6 +141,14 @@ server.get('/devices',async (req,res) => {
    const devices = await getDevices();
     return res.json(devices);
 })
+
+// Add this route to your app.js file
+server.post('/recommend_device', async (req, res) => {
+    const requestData = req.body;
+    const result = await callBayesianScript(requestData);
+    res.json(result);
+  });
+  
 
 // getHeaterState();
 
