@@ -14,6 +14,7 @@ const { insertRuleToDB,getAllRules, setRuleActive } = require('./rules.service.j
 const { switchHeaterState } = require('./heaterController.js');
 const { getDevices } = require('./devices.service.js');
 const { callBayesianScript } = require('./machineLearning.js');
+const { getCurrentSeasonAndHour } = require('./time.service.js');
 const server = express();
 const port = process.env.PORT || 3001;
 server.use(express.json());
@@ -142,11 +143,27 @@ server.get('/devices',async (req,res) => {
     return res.json(devices);
 })
 
-// Add this route to your app.js file
-server.post('/recommend_device', async (req, res) => {
-    const requestData = req.body;
-    const result = await callBayesianScript(requestData);
-    res.json(result);
+ // --------------------------------- Machine Learnign-Recoomnadations ---------------------------------
+ server.post('/recommend_device', async (req, res) => {
+    try {
+        const { device, distance_from_house, temperature, humidity } = req.body;
+        const { season, hour } = getCurrentSeasonAndHour();
+    
+        const requestData = {
+          device,
+          distance_from_house,
+          temperature,
+          humidity,
+          season,
+          hour,
+        };
+    
+        const recommendation = await callBayesianScript(requestData);
+        res.json(recommendation);
+      } catch (error) {
+        console.error(`Error getting recommendation: ${error}`);
+        res.status(500).json({ message: 'Internal server error' });
+      }
   });
   
 

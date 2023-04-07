@@ -1,5 +1,6 @@
 const axios = require('axios');
 
+
 function classifyHour(hour) {
     if (hour >= 0 && hour < 12) {
       return 1;
