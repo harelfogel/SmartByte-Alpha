@@ -9,7 +9,7 @@ const { homeConnectAuth, homeConnectToken } = require('./homeConnect.js');
 const { smartThingsGetDevices, switchWasherWater } = require('./smartThings2.js');
 const { checkforUserDistance } = require('./location.js');
 const Rule = require('./Rule');
-const { removeSensorValueByType, getFunctionsFromDB, getHeaterState } = require('./common.js');
+const { removeSensorValueByType, getFunctionsFromDB, getHeaterState, activateDevices } = require('./common.js');
 const { insertRuleToDB, getAllRules, setRuleActive } = require('./rules.service.js');
 const { switchHeaterState } = require('./heaterController.js');
 const { getDevices } = require('./devices.service.js');
@@ -65,6 +65,20 @@ server.post('/login', async (req, res) => {
   }
 });
 
+// --------------------------------- test yovel ---------------------------------
+server.post('/test', async (req, res) => {
+  let response;
+  try{
+    response = await activateDevices(req.body.func)
+    // console.log({response})
+    res.status(response.statusCode).json(response.data);
+
+  } catch (err) {
+    res.status(400).json(response.data);
+
+  }
+});
+
 
 
 // --------------------------------- Rules ---------------------------------
@@ -114,7 +128,9 @@ server.get('/homeConnect/callback', (req, res) => {
 server.post('/sensibo', async (req, res) => {
   console.log("-----------sensibo---------------")
   const state = req.body.state;
-  await switchAcState(state);
+  const temperature = req.body.temperature || null;
+  console.log({state, temperature, mode})
+  await switchAcState(state, temperature);
   res.json({ statusCode: 200 })
 })
 
