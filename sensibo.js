@@ -2,7 +2,7 @@ const { default: axios } = require("axios");
 const Device = require("./Device");
 const SensorValue = require('./SensorValue');
 
-
+const test = 0;
 const checkForDegrees = async (func) => {
   try{
     let response;
