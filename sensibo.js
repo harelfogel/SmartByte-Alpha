@@ -2,22 +2,54 @@ const { default: axios } = require("axios");
 const Device = require("./Device");
 const SensorValue = require('./SensorValue');
 
-const switchAcState = async (state) => {
+const test = 0;
+const checkForDegrees = async (func) => {
+  try{
+    let response;
+    const state = func.split(' ')[1];
+    
+    if(state !== 'on' && state!== 'off'){
+      throw new Error('Invalid state');
+    }
+    const boolState = state === 'on';
+    const numberPattern = /\d+/;
+    const matches = func.match(numberPattern);
+    if (matches && matches.length > 0) {
+      const degrees = matches[0];
+      if(degrees > 30 || degrees < 16){
+        throw new Error('Degrees has to be between 16 and 30');
+      }
+      response = await switchAcState(boolState,parseInt(degrees));
+    } else {
+      response = await switchAcState(boolState);
+    }
+    return response;
+    
+  }catch(err){
+    return {statusCode: 403, data: err.message}
+  }
+}
+
+const switchAcState = async (state, temperature = null) => {
     console.log("switchAcState")
-    console.log(state)
+    console.log({state, temperature})
 
     try{
-        const response= await axios.post(`https://home.sensibo.com/api/v2/pods/${process.env.SENSIBO_DEVICE_ID}/acStates?apiKey=${process.env.SENSIBO_API_KEY}`,{
+        const response = await axios.post(`https://home.sensibo.com/api/v2/pods/${process.env.SENSIBO_DEVICE_ID}/acStates?apiKey=${process.env.SENSIBO_API_KEY}`,{
            "acState":{
-               "on": state
+              "on": state,
+              "targetTemperature": temperature
+              
            }
         })
         console.log("AC changed ", state)
         await Device.updateOne({device_id: '9EimtVDZ'}, {state: state ? 'on' : 'off'});
-
+        console.log(response.data)
+        return {statusCode: 200, data: response.data.result};
 
     } catch(err){
-        console.log(err+"Invalid read from Sensibo");
+        console.log(err+" Invalid read from Sensibo");
+        return {statusCode: 403, data: err.message};
     }
 
 }
@@ -86,5 +118,6 @@ module.exports = {
     getAcState,
     getSensiboSensors,
     parseSensorAndWriteToMongo,
-    removeAllSensorValues
+    removeAllSensorValues,
+    checkForDegrees
 }

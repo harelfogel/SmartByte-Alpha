@@ -1,7 +1,7 @@
 const { default: axios } = require("axios");
 const Function = require("./Function");
 const SensorValue = require("./SensorValue");
-const { switchAcState } = require("./sensibo");
+const { switchAcState, checkForDegrees } = require("./sensibo");
 
 
 const removeSensorValueByType = async (sensorType) => {
@@ -18,25 +18,34 @@ const getFunctionsFromDB =  async () => {
         const functions = await Function.find();
         const response = await Function.deleteMany({});
         console.log(response.data);
-        functions.map(func => {
-            activateDevices(func.function.toLowerCase())
+        functions.map(async (func) => {
+            await activateDevices(func.function.toLowerCase())
         })
     }catch(e){
         console.log(e);
     }
 }
 
-const activateDevices = (func) => {
-    switch (func) {
-        case 'on ac':
-            switchAcState(true);
-            break;
-        case 'on heater':
-            switchHeaterState(true);
-            break;
-        default:
-            break;
+const activateDevices = async (func) => {
+    const acPattern = /\b(ac)\b/;
+    const heaterPattern = /\b(heater)\b/;
+
+    try {
+        let response;
+        if (acPattern.test(func)) {
+            // switchAcState(true);
+            response = await checkForDegrees(func)
+        } else if (heaterPattern.test(func)) {
+            response = switchHeaterState(true);
+        }
+
+        return response;
+
+    }catch(err){
+        console.log(err + " activateDevices");
     }
+
+
 }
 
 
@@ -64,5 +73,6 @@ const switchHeaterState = async (state) => {
 module.exports = {
     removeSensorValueByType,
     getFunctionsFromDB,
-    getHeaterState
+    getHeaterState,
+    activateDevices
 }
