@@ -126,12 +126,17 @@ server.get('/homeConnect/callback', (req, res) => {
 // --------------------------------- Sensibo- AC ---------------------------------
 
 server.post('/sensibo', async (req, res) => {
-  console.log("-----------sensibo---------------")
-  const state = req.body.state;
-  const temperature = req.body.temperature || null;
-  console.log({state, temperature, mode})
-  await switchAcState(state, temperature);
-  res.json({ statusCode: 200 })
+  try{
+
+    console.log("-----------sensibo---------------")
+    const state = req.body.state;
+    const temperature = req.body.temperature || null;
+    console.log({state, temperature})
+    await switchAcState(state, temperature);
+    res.json({ statusCode: 200 })
+  } catch(err) {
+    return res.status(400).json({ message: err.message })
+  }
 })
 
 server.get('/sensibo', async (req, res) => {
