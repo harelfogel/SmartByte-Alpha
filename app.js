@@ -10,7 +10,7 @@ const { smartThingsGetDevices, switchWasherWater } = require('./smartThings2.js'
 const { checkforUserDistance } = require('./location.js');
 const Rule = require('./Rule');
 const { removeSensorValueByType, getFunctionsFromDB, getHeaterState, activateDevices } = require('./common.js');
-const { insertRuleToDB, getAllRules, setRuleActive } = require('./rules.service.js');
+const { insertRuleToDB, getAllRules, setRuleActive, removeRuleFromDB } = require('./rules.service.js');
 const { switchHeaterState } = require('./heaterController.js');
 const { getDevices } = require('./devices.service.js');
 const { callBayesianScript } = require('./machineLearning.js');
@@ -99,6 +99,13 @@ server.post('/rules/:id', async (req, res) => {
   const { isActive } = req.body;
   const id = req.params.id;
   const response = await setRuleActive(id, isActive);
+  return res.status(response.statusCode).send(response.message);
+});
+
+server.delete('/rules/:id', async (req, res) => {
+  console.log(req);
+  const id = req.params.id;
+  const response = await removeRuleFromDB(id);
   return res.status(response.statusCode).send(response.message);
 });
 
