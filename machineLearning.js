@@ -1,4 +1,8 @@
 const axios = require('axios');
+const { getLatestSensorValues } = require('./sensorValues.service');
+const { getCurrentSeasonAndHour } = require('./time.service');
+
+
 
 
 function classifyHour(hour) {
@@ -82,7 +86,31 @@ async function callBayesianScript(requestData) {
   }
 }
 
+async function runBayesianScript() {
+  console.log('Baysian Script is called!');
+  try {
+    const devices = ["heater_switch", "lights", "ac_status", "fan", "laundry_machine"];
+    const { temperature, humidity, distance } = await getLatestSensorValues();
+    const { season, hour } = getCurrentSeasonAndHour();
+    const requestData = {
+      devices,
+      distance,
+      temperature,
+      humidity,
+      season,
+      hour,
+    };
+
+    const recommendation = await callBayesianScript(requestData);
+    console.log(recommendation); // Do something with the recommendation
+  } catch (error) {
+    console.error(`Error getting recommendation: ${error}`);
+  }
+}
+
+
 module.exports = {
-    callBayesianScript
+    callBayesianScript,
+    runBayesianScript
 }
 
