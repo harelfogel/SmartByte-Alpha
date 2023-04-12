@@ -15,7 +15,11 @@ const { callBayesianScript, runBayesianScript } = require('./machineLearning.js'
 const { getCurrentSeasonAndHour } = require('./time.service.js');
 const { signInUser, registerUser } = require('./users.service');
 const jwt = require('jsonwebtoken');
+
+const connectToWs = require('./ws.js');
+
 const { getLatestSensorValues } = require('./sensorValues.service.js');
+
 require('dotenv').config();
 
 
@@ -26,6 +30,9 @@ server.use(cors({ origin: true }));
 
 // Connect to MongoDB
 connectDB();
+
+connectToWs();
+  
 
 
 
