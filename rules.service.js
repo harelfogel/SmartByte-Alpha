@@ -15,8 +15,52 @@ const decideOnState = (rule) => {
     return (/\b(off)\b/i.test(rule) ? 'on' : 'off')
 }
 
+const validateRule = (rule) => {
+    console.log({rule});
+    const parsedRule = rule.split(' ');
+    console.log({parsedRule});
+    if(parsedRule[0] !== 'IF'){
+        return {
+            statusCode: 400,
+            message: 'Rule must start with IF'
+        }
+    }
+    const operator = 
+        /\b(<)\b/i.test(rule) ? '<' :
+        /\b(>)\b/i.test(rule) ? '>' : 
+        /\b(=)\b/i.test(rule) ? '=' : null;
+    if(!operator) {
+        return {
+            statusCode: 400,
+            message: 'Rule must contain one of theses operators: <, >, ='
+        }
+    }
+    const sensor = parsedRule[1].split(operator)[0];
+    console.log({sensor});
+    if(sensor !== 'Temperature' && sensor !== 'distance' && sensor !== 'Humidity') {
+        return {
+            statusCode: 400,
+            message: 'Rule must contain one of theses sensors: Temperature, distance, Humidity'
+        }
+    }
+
+    return {
+        statusCode: 200,
+        message: 'Rule validated successfully'
+    }
+}
+
+// IF Temperature<10 THEN TURN("ac on 22")
+
 const insertRuleToDB = async (rule) => {
     try {
+        const ruleValidation = validateRule(rule);
+        if(ruleValidation.statusCode === 400) {
+            return {
+                statusCode: ruleValidation.statusCode,
+                message: ruleValidation.message
+            }
+        }
         const newRule = new Rule({ rule });
         newRule.id = Math.floor(10000000 + Math.random() * 90000000);
         await newRule.save();
