@@ -3,7 +3,7 @@ const Device = require("./Device");
 const SensorValue = require('./SensorValue');
 
 const test = 0;
-const checkForDegrees = async (func) => {
+const analyzeFunc = async (func) => {
   try{
     let response;
     const state = func.split(' ')[1];
@@ -30,25 +30,35 @@ const checkForDegrees = async (func) => {
   }
 }
 
+
+const validateDegree = (degree) => {
+  if(degree > 30 || degree < 16){
+    return false;
+  }
+  return true;
+} 
+
 const switchAcState = async (state, temperature = null) => {
-    console.log("switchAcState")
-    console.log({state, temperature})
+    // console.log("switchAcState")
+    // console.log({state, temperature})
 
     try{
-        const response = await axios.post(`https://home.sensibo.com/api/v2/pods/${process.env.SENSIBO_DEVICE_ID}/acStates?apiKey=${process.env.SENSIBO_API_KEY}`,{
-           "acState":{
+        if(validateDegree(temperature)){
+          const response = await axios.post(`https://home.sensibo.com/api/v2/pods/${process.env.SENSIBO_DEVICE_ID}/acStates?apiKey=${process.env.SENSIBO_API_KEY}`,{
+            "acState":{
               "on": state,
               "targetTemperature": temperature
-              
-           }
-        })
-        console.log("AC changed ", state)
-        await Device.updateOne({device_id: '9EimtVDZ'}, {state: state ? 'on' : 'off'});
-        console.log(response.data)
-        return {statusCode: 200, data: response.data.result};
+            }
+          })
+          await Device.updateOne({device_id: '9EimtVDZ'}, {state: state ? 'on' : 'off'});
+          return {statusCode: 200, data: response.data.result};
+        }
+        else {
+          throw new Error('Temperature has to be between 16 and 30');
+        }
 
     } catch(err){
-        console.log(err+" Invalid read from Sensibo");
+      // console.log(err).message;
         return {statusCode: 403, data: err.message};
     }
 
@@ -119,5 +129,5 @@ module.exports = {
     getSensiboSensors,
     parseSensorAndWriteToMongo,
     removeAllSensorValues,
-    checkForDegrees
+    analyzeFunc
 }

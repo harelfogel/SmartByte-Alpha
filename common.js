@@ -1,7 +1,7 @@
 const { default: axios } = require("axios");
 const Function = require("./Function");
 const SensorValue = require("./SensorValue");
-const { switchAcState, checkForDegrees } = require("./sensibo");
+const { switchAcState, analyzeFunc } = require("./sensibo");
 
 
 const removeSensorValueByType = async (sensorType) => {
@@ -34,7 +34,7 @@ const activateDevices = async (func) => {
         let response;
         if (acPattern.test(func)) {
             // switchAcState(true);
-            response = await checkForDegrees(func)
+            response = await analyzeFunc(func)
         } else if (heaterPattern.test(func)) {
             response = switchHeaterState(true);
         }
