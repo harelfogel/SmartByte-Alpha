@@ -4,19 +4,16 @@ const express = require('express');
 const connectDB = require('./config');
 const { switchAcState, getAcState, getSensiboSensors, parseSensorAndWriteToMongo, removeAllSensorValues } = require('./sensibo.js');
 const cors = require("cors");
-const { json } = require('express');
 const { homeConnectAuth, homeConnectToken } = require('./homeConnect.js');
 const { smartThingsGetDevices, switchWasherWater } = require('./smartThings2.js');
 const { checkforUserDistance } = require('./location.js');
-const Rule = require('./Rule');
 const { removeSensorValueByType, getFunctionsFromDB, getHeaterState, activateDevices } = require('./common.js');
 const { insertRuleToDB, getAllRules, setRuleActive } = require('./rules.service.js');
 const { switchHeaterState } = require('./heaterController.js');
 const { getDevices } = require('./devices.service.js');
-const { callBayesianScript } = require('./machineLearning.js');
+const { callBayesianScript, runBayesianScript } = require('./machineLearning.js');
 const { getCurrentSeasonAndHour } = require('./time.service.js');
 const { signInUser, registerUser } = require('./users.service');
-const User = require('./User.js');
 const jwt = require('jsonwebtoken');
 const { getLatestSensorValues } = require('./sensorValues.service.js');
 require('dotenv').config();
@@ -218,6 +215,8 @@ server.get('/recommend_device', async (req, res) => {
 });
 
 
+const BAYESIAN_SCRIPT_INTERVAL = 600000; // 10 minutes in milliseconds
+setInterval(runBayesianScript, BAYESIAN_SCRIPT_INTERVAL);
 
 
 
