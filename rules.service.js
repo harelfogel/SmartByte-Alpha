@@ -78,6 +78,23 @@ const insertRuleToDB = async (rule) => {
 }
 
 
+const removeRuleFromDB = async (id) => {
+    try {
+        console.log('--------Delete Rule--------');
+        await Rule.deleteOne({id: id});
+        return {
+            statusCode: 200,
+            message: 'Rule deleted successfully'
+        }
+    } catch (err) {
+        return {
+            statusCode: 500,
+            message: `Error deleting rule - ${err}`
+        }
+    }
+}
+
+
 const backupokdInsertToDb = async (rule, isStrict) => {
     try {
         const devices = checkForDevices(rule);
@@ -140,5 +157,6 @@ const getAllRules = async () => {
 module.exports = {
     insertRuleToDB,
     getAllRules,
-    setRuleActive
+    setRuleActive,
+    removeRuleFromDB
 }
