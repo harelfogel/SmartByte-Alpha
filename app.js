@@ -18,6 +18,7 @@ const { getCurrentSeasonAndHour } = require('./time.service.js');
 const { signInUser, registerUser } = require('./users.service');
 const User = require('./User.js');
 const jwt = require('jsonwebtoken');
+const connectToWs = require('./ws.js');
 require('dotenv').config();
 
 
@@ -28,6 +29,9 @@ server.use(cors({ origin: true }));
 
 // Connect to MongoDB
 connectDB();
+
+connectToWs();
+  
 
 
 
