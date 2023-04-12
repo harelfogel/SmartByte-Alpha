@@ -1,5 +1,5 @@
 const WebSocket = require('ws');
-
+const moment = require('moment');
 
 const connectToWs = () => {
 
@@ -18,7 +18,7 @@ const connectToWs = () => {
 
     // setInterval(() => {
     //     wss.clients.forEach((client) => {
-    //         client.send('Hello, client!');
+    //         client.send('New Rule Suggestion!');
     //     });
     // },3000)
     
