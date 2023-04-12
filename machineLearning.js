@@ -2,11 +2,11 @@ const axios = require('axios');
 
 
 function classifyHour(hour) {
-    if (hour >= 0 && hour < 12) {
-      return 1;
-    } else if (hour >= 12 && hour < 18) {
+    if (hour >= 0 && hour < 12) {   // morning
+      return 1;  
+    } else if (hour >= 12 && hour < 18) { // afternoon
       return 2;
-    } else {
+    } else {   //evening
       return 3;
     }
   }
@@ -67,9 +67,11 @@ async function callBayesianScript(requestData) {
     season: classifySeason(requestData.season),
   };
 
+  console.log({evidence});
+  console.log(requestData.devices);
   try {
     const response = await axios.post('http://127.0.0.1:5000/recommend_device', {
-      device: requestData.device,
+      devices: requestData.devices,
       evidence: evidence,
     });
 

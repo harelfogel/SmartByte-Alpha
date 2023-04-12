@@ -10,7 +10,7 @@ const { smartThingsGetDevices, switchWasherWater } = require('./smartThings2.js'
 const { checkforUserDistance } = require('./location.js');
 const Rule = require('./Rule');
 const { removeSensorValueByType, getFunctionsFromDB, getHeaterState, activateDevices } = require('./common.js');
-const { insertRuleToDB, getAllRules, setRuleActive, removeRuleFromDB } = require('./rules.service.js');
+const { insertRuleToDB, getAllRules, setRuleActive } = require('./rules.service.js');
 const { switchHeaterState } = require('./heaterController.js');
 const { getDevices } = require('./devices.service.js');
 const { callBayesianScript } = require('./machineLearning.js');
@@ -18,6 +18,7 @@ const { getCurrentSeasonAndHour } = require('./time.service.js');
 const { signInUser, registerUser } = require('./users.service');
 const User = require('./User.js');
 const jwt = require('jsonwebtoken');
+const { getLatestSensorValues } = require('./sensorValues.service.js');
 require('dotenv').config();
 
 
@@ -102,13 +103,6 @@ server.post('/rules/:id', async (req, res) => {
   return res.status(response.statusCode).send(response.message);
 });
 
-server.delete('/rules/:id', async (req, res) => {
-  console.log(req);
-  const id = req.params.id;
-  const response = await removeRuleFromDB(id);
-  return res.status(response.statusCode).send(response.message);
-});
-
 
 // --------------------------------- SmartThings- Laundry ---------------------------------
 
@@ -134,12 +128,13 @@ server.get('/homeConnect/callback', (req, res) => {
 
 server.post('/sensibo', async (req, res) => {
   try{
+
     console.log("-----------sensibo---------------")
     const state = req.body.state;
     const temperature = req.body.temperature || null;
     console.log({state, temperature})
-    const response = await switchAcState(state, temperature);
-    res.json(response);
+    await switchAcState(state, temperature);
+    res.json({ statusCode: 200 })
   } catch(err) {
     return res.status(400).json({ message: err.message })
   }
@@ -200,14 +195,14 @@ server.get('/devices', async (req, res) => {
 })
 
 // --------------------------------- Machine Learnign-Recoomnadations ---------------------------------
-server.post('/recommend_device', async (req, res) => {
+server.get('/recommend_device', async (req, res) => {
   try {
-    const { device, distance_from_house, temperature, humidity } = req.body;
+    const devices=["heater_switch","lights","ac_status","fan","laundry_machine"];
+    const {temperature,humidity,distance}= await getLatestSensorValues();
     const { season, hour } = getCurrentSeasonAndHour();
-
     const requestData = {
-      device,
-      distance_from_house,
+      devices,
+      distance,
       temperature,
       humidity,
       season,
