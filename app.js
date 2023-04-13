@@ -10,6 +10,7 @@ const { checkforUserDistance } = require('./location.js');
 const { removeSensorValueByType, getFunctionsFromDB, getHeaterState, activateDevices } = require('./common.js');
 const { insertRuleToDB, getAllRules, setRuleActive } = require('./rules.service.js');
 const { switchHeaterState } = require('./heaterController.js');
+const { getSuggestions } = require('./suggestions.service.js');
 const { getDevices } = require('./devices.service.js');
 const { callBayesianScript, runBayesianScript } = require('./machineLearning.js');
 const { getCurrentSeasonAndHour } = require('./time.service.js');
@@ -222,8 +223,23 @@ server.get('/recommend_device', async (req, res) => {
 });
 
 
-const BAYESIAN_SCRIPT_INTERVAL = 600000; // 10 minutes in milliseconds
-setInterval(runBayesianScript, BAYESIAN_SCRIPT_INTERVAL);
+// --------------------------------- Suggestions ---------------------------------
+server.get('/suggestions', async (req, res) => {
+  try {
+    const suggestions = await getSuggestions();
+    res.status(200).json(suggestions);
+  } catch (err) {
+    res.status(500).json({ message: 'Error fetching suggestions' });
+  }
+});
+
+
+
+
+// --------------------------------- Running the ML script ---------------------------------
+
+// const BAYESIAN_SCRIPT_INTERVAL = 600000; // 10 minutes in milliseconds
+// setInterval(runBayesianScript, BAYESIAN_SCRIPT_INTERVAL);
 
 
 
