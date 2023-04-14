@@ -16,6 +16,7 @@ const { callBayesianScript, runBayesianScript } = require('./machineLearning.js'
 const { getCurrentSeasonAndHour } = require('./time.service.js');
 const { signInUser, registerUser } = require('./users.service');
 const jwt = require('jsonwebtoken');
+const axios=require('axios');
 
 const connectToWs = require('./ws.js');
 
@@ -230,6 +231,21 @@ server.get('/suggestions', async (req, res) => {
     res.status(200).json(suggestions);
   } catch (err) {
     res.status(500).json({ message: 'Error fetching suggestions' });
+  }
+});
+
+// --------------------------------- Insights-Graph Data ---------------------------------
+server.get('/graph-data', async (req, res) => {
+  try {
+    const device = req.query.device;
+    const time_range = req.query.time_range;
+    const response = await axios.get(`${process.env.PYTHON_SERVER_URL}/graph-data`, {
+      params: { device, time_range },
+    });
+    res.status(200).json(response.data);
+  } catch (error) {
+    console.error("Error fetching graph data:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 });
 

@@ -12,3 +12,4 @@ const SuggestionSchema = new mongoose.Schema({
 });
 
 module.exports = mongoose.model('suggestions', SuggestionSchema);
+
