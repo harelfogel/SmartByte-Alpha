@@ -12,7 +12,7 @@ const { insertRuleToDB, getAllRules, setRuleActive } = require('./rules.service.
 const { switchHeaterState } = require('./heaterController.js');
 const { getSuggestions } = require('./suggestions.service.js');
 const { getDevices } = require('./devices.service.js');
-const { callBayesianScript, runBayesianScript } = require('./machineLearning.js');
+const { callBayesianScript, runBayesianScript, addingDataToCsv } = require('./machineLearning.js');
 const { getCurrentSeasonAndHour } = require('./time.service.js');
 const { signInUser, registerUser } = require('./users.service');
 const jwt = require('jsonwebtoken');
@@ -197,6 +197,17 @@ server.post('/location', async (req, res) => {
 server.get('/devices', async (req, res) => {
   const devices = await getDevices();
   return res.json(devices);
+})
+
+// --------------------------------- Machine Learnign-Recoomnadations ---------------------------------
+server.get('/update_data', async (req,res) => {
+  try {
+    const adding_res = await addingDataToCsv();
+    res.status(200).json(adding_res);
+  } catch (error) {
+    console.error(`Error adding data: ${error}`);
+    res.status(500).json({ message: 'Internal server error' });
+  }
 })
 
 // --------------------------------- Machine Learnign-Recoomnadations ---------------------------------
