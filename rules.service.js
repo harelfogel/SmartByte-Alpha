@@ -1,4 +1,6 @@
 const Rule = require("./Rule");
+const { ObjectId } = require('bson');
+
 
 const checkForDevices = (rule) => {
     const devices = [];
@@ -16,28 +18,28 @@ const decideOnState = (rule) => {
 }
 
 const validateRule = (rule) => {
-    console.log({rule});
+    console.log({ rule });
     const parsedRule = rule.split(' ');
-    console.log({parsedRule});
-    if(parsedRule[0] !== 'IF'){
+    console.log({ parsedRule });
+    if (parsedRule[0] !== 'IF') {
         return {
             statusCode: 400,
             message: 'Rule must start with IF'
         }
     }
-    const operator = 
+    const operator =
         /\b(<)\b/i.test(rule) ? '<' :
-        /\b(>)\b/i.test(rule) ? '>' : 
-        /\b(=)\b/i.test(rule) ? '=' : null;
-    if(!operator) {
+            /\b(>)\b/i.test(rule) ? '>' :
+                /\b(=)\b/i.test(rule) ? '=' : null;
+    if (!operator) {
         return {
             statusCode: 400,
             message: 'Rule must contain one of theses operators: <, >, ='
         }
     }
     const sensor = parsedRule[1].split(operator)[0];
-    console.log({sensor});
-    if(sensor !== 'Temperature' && sensor !== 'distance' && sensor !== 'Humidity') {
+    console.log({ sensor });
+    if (sensor !== 'Temperature' && sensor !== 'distance' && sensor !== 'Humidity') {
         return {
             statusCode: 400,
             message: 'Rule must contain one of theses sensors: Temperature, distance, Humidity'
@@ -55,7 +57,7 @@ const validateRule = (rule) => {
 const insertRuleToDB = async (rule) => {
     try {
         const ruleValidation = validateRule(rule);
-        if(ruleValidation.statusCode === 400) {
+        if (ruleValidation.statusCode === 400) {
             return {
                 statusCode: ruleValidation.statusCode,
                 message: ruleValidation.message
@@ -81,7 +83,7 @@ const insertRuleToDB = async (rule) => {
 const removeRuleFromDB = async (id) => {
     try {
         console.log('--------Delete Rule--------');
-        await Rule.deleteOne({id: id});
+        await Rule.deleteOne({ id: id });
         return {
             statusCode: 200,
             message: 'Rule deleted successfully'
@@ -99,7 +101,7 @@ const backupokdInsertToDb = async (rule, isStrict) => {
     try {
         const devices = checkForDevices(rule);
 
-        let parserRule = rule.split("THEN"); 
+        let parserRule = rule.split("THEN");
         const state = decideOnState(rule);
 
         devices.map(device => {
@@ -124,23 +126,23 @@ const backupokdInsertToDb = async (rule, isStrict) => {
 
 const getAllRules = async () => {
     try {
-      const rules = await Rule.find();
-      return {
-        statusCode: 200,
-        data: rules,
-      };
+        const rules = await Rule.find();
+        return {
+            statusCode: 200,
+            data: rules,
+        };
     } catch (error) {
-      return {
-        statusCode: 500,
-        message: `Error fetching rules - ${error}`,
-      };
+        return {
+            statusCode: 500,
+            message: `Error fetching rules - ${error}`,
+        };
     }
-  };
+};
 
 
-  const setRuleActive = async (ruleId, isActive) => {
-    try{
-        await Rule.updateOne({id: ruleId}, {$set: {isActive: isActive}});
+const setRuleActive = async (ruleId, isActive) => {
+    try {
+        await Rule.updateOne({ id: ruleId }, { $set: { isActive: isActive } });
         return {
             statusCode: 200,
             message: 'Rule updated successfully',
@@ -151,12 +153,30 @@ const getAllRules = async () => {
             message: `Error updating rule - ${error}`,
         };
     }
+}
+
+async function deleteRuleById(ruleId) {
+    try {
+      const result = await Rule.deleteOne({ id: ruleId });
+      console.log("Deleted rule:", result);
+  
+      if (result.deletedCount === 1) {
+        return { status: 200 };
+      } else {
+        return { status: 400 };
+      }
+    } catch (error) {
+      console.error("Error deleting rule:", error);
+      return { status: 500 };
+    }
   }
+  
 
 
-module.exports = {
+    module.exports = {
     insertRuleToDB,
     getAllRules,
     setRuleActive,
-    removeRuleFromDB
+    removeRuleFromDB,
+    deleteRuleById
 }

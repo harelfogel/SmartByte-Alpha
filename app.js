@@ -8,7 +8,7 @@ const { homeConnectAuth, homeConnectToken } = require('./homeConnect.js');
 const { smartThingsGetDevices, switchWasherWater } = require('./smartThings2.js');
 const { checkforUserDistance } = require('./location.js');
 const { removeSensorValueByType, getFunctionsFromDB, getHeaterState, activateDevices } = require('./common.js');
-const { insertRuleToDB, getAllRules, setRuleActive } = require('./rules.service.js');
+const { insertRuleToDB, getAllRules, setRuleActive, deleteRuleById } = require('./rules.service.js');
 const { switchHeaterState } = require('./heaterController.js');
 const { getSuggestions } = require('./suggestions.service.js');
 const { getDevices } = require('./devices.service.js');
@@ -108,6 +108,24 @@ server.post('/rules/:id', async (req, res) => {
   const response = await setRuleActive(id, isActive);
   return res.status(response.statusCode).send(response.message);
 });
+
+server.delete('/rules/:id', async (req, res) => {
+  const id = req.params.id;
+  try {
+    // Assuming you have a function to delete the rule by its ID
+    const response = await deleteRuleById(id);
+    console.log({response});
+
+    if (response.status === 200) {
+      res.status(200).json({ message: "Rule deleted successfully" });
+    } else {
+      res.status(400).json({ message: "Error deleting the rule" });
+    }
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 
 
 // --------------------------------- SmartThings- Laundry ---------------------------------
