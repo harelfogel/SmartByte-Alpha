@@ -152,6 +152,8 @@ const setRuleActive = async (ruleId, isActive) => {
             statusCode: 500,
             message: `Error updating rule - ${error}`,
         };
+
+        
     }
 }
 
