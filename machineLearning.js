@@ -1,6 +1,7 @@
 const axios = require('axios');
 const { getLatestSensorValues } = require('./sensorValues.service');
 const { getCurrentSeasonAndHour } = require('./time.service');
+require('dotenv').config();
 const { getDevices } = require('./devices.service.js');
 const { DateTime } = require('luxon');
 
@@ -70,11 +71,8 @@ async function callBayesianScript(requestData) {
     distance_from_house: classifyDistance(requestData.distance_from_house),
     season: classifySeason(requestData.season),
   };
-
-  console.log({evidence});
-  console.log(requestData.devices);
   try {
-    const response = await axios.post('http://127.0.0.1:5000/recommend_device', {
+    const response = await axios.post(`${process.env.PYTHON_SERVER_URL}/recommend_device`, {
       devices: requestData.devices,
       evidence: evidence,
     });
