@@ -10,7 +10,7 @@ const { checkforUserDistance } = require('./location.js');
 const { removeSensorValueByType, getFunctionsFromDB, getHeaterState, activateDevices } = require('./common.js');
 const { insertRuleToDB, getAllRules, setRuleActive } = require('./rules.service.js');
 const { switchHeaterState } = require('./heaterController.js');
-const { getSuggestions } = require('./suggestions.service.js');
+const { getSuggestions, updateSuggestions } = require('./suggestions.service.js');
 const { getDevices } = require('./devices.service.js');
 const { callBayesianScript, runBayesianScript, addingDataToCsv } = require('./machineLearning.js');
 const { getCurrentSeasonAndHour } = require('./time.service.js');
@@ -20,6 +20,7 @@ const jwt = require('jsonwebtoken');
 const connectToWs = require('./ws.js');
 
 const { getLatestSensorValues } = require('./sensorValues.service.js');
+const { response } = require('express');
 
 require('dotenv').config();
 
@@ -243,6 +244,23 @@ server.get('/suggestions', async (req, res) => {
     res.status(500).json({ message: 'Error fetching suggestions' });
   }
 });
+
+
+server.put('/suggestions/', async (req, res) => {
+  try {
+    // const id = req.params.id;
+    Object.entries(req.body).map(suggestion =>{
+      [key, value] = suggestion;
+       updateSuggestions(key,value);
+    })
+    console.log({response})
+    res.status(200).send(response.data);
+  } catch (err) {
+    res.status(500).send({ message: err.message });
+  }
+});
+
+
 
 
 
