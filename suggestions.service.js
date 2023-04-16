@@ -1,4 +1,7 @@
 const Suggestion = require('./Suggestion');
+const axios = require('axios');
+const { getLatestSensorValues } = require('./sensorValues.service');
+const { getCurrentSeasonAndHour } = require('./time.service');
 
 const getSuggestions = async () => {
   try {
@@ -10,6 +13,47 @@ const getSuggestions = async () => {
   }
 };
 
+async function addSuggestionsToDatabase() {
+  const latestSensorValues = await getLatestSensorValues();
+  const { season, hour } = getCurrentSeasonAndHour();
+  const currentTemperature = latestSensorValues.temperature;
+  const currentHumidity = latestSensorValues.humidity;
+  const currentDistance = latestSensorValues.distance;
+
+  const devices = ['lights', 'fan', 'ac_status', 'heater_switch', 'laundry_machine'];
+  const evidence = {
+    'temperature': currentTemperature,
+    'humidity': currentHumidity,
+    'distance_from_house': currentDistance,
+    'season': season,
+    'hour':hour
+  };
+
+  // Call the recommend_device function with the evidence
+  const response = await axios.post('http://localhost:5000/recommend_device', {
+    devices: devices,
+    evidence: evidence
+  });
+
+  const recommendedDevices = response.data;
+
+  // Add the suggestions to the MongoDB database
+  for (const recommendedDevice of recommendedDevices) {
+    const suggestion = new Suggestion({
+      device: recommendedDevice.device,
+      evidence: {
+        Temperature: evidence.temperature,
+        distance: evidence.distance_from_house,
+        humidity: evidence.humidity
+      },
+      state: "on"
+    });
+    await suggestion.save();
+  }
+}
+
+
 module.exports = {
   getSuggestions,
+  addSuggestionsToDatabase
 };

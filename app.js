@@ -10,13 +10,14 @@ const { checkforUserDistance } = require('./location.js');
 const { removeSensorValueByType, getFunctionsFromDB, getHeaterState, activateDevices } = require('./common.js');
 const { insertRuleToDB, getAllRules, setRuleActive, deleteRuleById } = require('./rules.service.js');
 const { switchHeaterState } = require('./heaterController.js');
-const { getSuggestions } = require('./suggestions.service.js');
+const { getSuggestions, addSuggestionsToDatabase } = require('./suggestions.service.js');
 const { getDevices } = require('./devices.service.js');
 const { callBayesianScript, runBayesianScript, addingDataToCsv } = require('./machineLearning.js');
 const { getCurrentSeasonAndHour } = require('./time.service.js');
 const { signInUser, registerUser } = require('./users.service');
 const jwt = require('jsonwebtoken');
 const axios=require('axios');
+const schedule = require('node-schedule');
 
 const connectToWs = require('./ws.js');
 
@@ -279,6 +280,9 @@ server.get('/graph-data', async (req, res) => {
 });
 
 
+// Schedule the job to run at specific hours
+schedule.scheduleJob('0 8,12,14,18,20 * * *', addSuggestionsToDatabase);
+schedule.scheduleJob('30 8 * * *', addSuggestionsToDatabase);
 
 
 // --------------------------------- Running the ML script ---------------------------------
