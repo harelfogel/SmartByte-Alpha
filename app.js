@@ -10,7 +10,7 @@ const { checkforUserDistance } = require('./location.js');
 const { removeSensorValueByType, getFunctionsFromDB, getHeaterState, activateDevices } = require('./common.js');
 const { insertRuleToDB, getAllRules, setRuleActive } = require('./rules.service.js');
 const { switchHeaterState } = require('./heaterController.js');
-const { getSuggestions, updateSuggestions } = require('./suggestions.service.js');
+const { getSuggestions, updateSuggestions, addNewSuggestion } = require('./suggestions.service.js');
 const { getDevices } = require('./devices.service.js');
 const { callBayesianScript, runBayesianScript, addingDataToCsv } = require('./machineLearning.js');
 const { getCurrentSeasonAndHour } = require('./time.service.js');
@@ -246,7 +246,7 @@ server.get('/suggestions', async (req, res) => {
 });
 
 
-server.put('/suggestions/', async (req, res) => {
+server.put('/suggestions', async (req, res) => {
   try {
     // const id = req.params.id;
     Object.entries(req.body).map(suggestion =>{
@@ -258,9 +258,17 @@ server.put('/suggestions/', async (req, res) => {
   } catch (err) {
     res.status(500).send({ message: err.message });
   }
+
 });
 
+server.post('/suggestions', async (req,res) => {
+  try {
+    const response = await addNewSuggestion(req.body);
+    return res.status(200).send(response.data);
+  }catch(err) {
 
+  }
+})
 
 
 
