@@ -8,7 +8,7 @@ const { homeConnectAuth, homeConnectToken } = require('./homeConnect.js');
 const { smartThingsGetDevices, switchWasherWater } = require('./smartThings2.js');
 const { checkforUserDistance } = require('./location.js');
 const { removeSensorValueByType, getFunctionsFromDB, getHeaterState, activateDevices } = require('./common.js');
-const { insertRuleToDB, getAllRules, setRuleActive } = require('./rules.service.js');
+const { insertRuleToDB, getAllRules, setRuleActive, deleteRuleById } = require('./rules.service.js');
 const { switchHeaterState } = require('./heaterController.js');
 const { getSuggestions, updateSuggestions, addNewSuggestion } = require('./suggestions.service.js');
 const { getDevices } = require('./devices.service.js');
@@ -16,6 +16,7 @@ const { callBayesianScript, runBayesianScript, addingDataToCsv } = require('./ma
 const { getCurrentSeasonAndHour } = require('./time.service.js');
 const { signInUser, registerUser } = require('./users.service');
 const jwt = require('jsonwebtoken');
+const axios=require('axios');
 
 const connectToWs = require('./ws.js');
 
@@ -108,6 +109,24 @@ server.post('/rules/:id', async (req, res) => {
   const response = await setRuleActive(id, isActive);
   return res.status(response.statusCode).send(response.message);
 });
+
+server.delete('/rules/:id', async (req, res) => {
+  const id = req.params.id;
+  try {
+    // Assuming you have a function to delete the rule by its ID
+    const response = await deleteRuleById(id);
+    console.log({response});
+
+    if (response.status === 200) {
+      res.status(200).json({ message: "Rule deleted successfully" });
+    } else {
+      res.status(400).json({ message: "Error deleting the rule" });
+    }
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 
 
 // --------------------------------- SmartThings- Laundry ---------------------------------
@@ -242,6 +261,21 @@ server.get('/suggestions', async (req, res) => {
     res.status(200).json(suggestions);
   } catch (err) {
     res.status(500).json({ message: 'Error fetching suggestions' });
+  }
+});
+
+// --------------------------------- Insights-Graph Data ---------------------------------
+server.get('/graph-data', async (req, res) => {
+  try {
+    const device = req.query.device;
+    const time_range = req.query.time_range;
+    const response = await axios.get(`${process.env.PYTHON_SERVER_URL}/graph-data`, {
+      params: { device, time_range },
+    });
+    res.status(200).json(response.data);
+  } catch (error) {
+    console.error("Error fetching graph data:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 });
 
