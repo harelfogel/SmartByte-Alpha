@@ -31,12 +31,12 @@ const validateRule = (rule) => {
         /\b(<)\b/i.test(rule) ? '<' :
             /\b(>)\b/i.test(rule) ? '>' :
                 /\b(=)\b/i.test(rule) ? '=' : null;
-    if (!operator) {
-        return {
-            statusCode: 400,
-            message: 'Rule must contain one of theses operators: <, >, ='
-        }
-    }
+    // if (!operator) {
+    //     return {
+    //         statusCode: 400,
+    //         message: 'Rule must contain one of theses operators: <, >, ='
+    //     }
+    // }
     const sensor = parsedRule[1].split(operator)[0];
     console.log({ sensor });
     if (sensor !== 'Temperature' && sensor !== 'distance' && sensor !== 'Humidity') {

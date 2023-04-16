@@ -88,9 +88,19 @@ const updateSuggestions = async (key, value) => {
   }
 };
 
+const deleteSuggestion = async (id) => {
+  try {
+    const response = await Suggestion.deleteOne({ id: id });
+      return { statusCode: 200, data: response.data };
+  } catch (error) {
+    return { statusCode: 400, data: "Cannot delete rule: " + error.message };
+  }
+};
+
 module.exports = {
   getSuggestions,
   addSuggestionsToDatabase,
   addSuggestionMenually,
-  updateSuggestions
+  updateSuggestions,
+  deleteSuggestion
 };

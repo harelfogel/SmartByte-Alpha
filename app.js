@@ -35,6 +35,7 @@ const {
   addSuggestionsToDatabase,
   updateSuggestions,
   addSuggestionMenually,
+  deleteSuggestion,
 } = require("./suggestions.service.js");
 const { getDevices } = require("./devices.service.js");
 const {
@@ -329,6 +330,16 @@ server.post("/suggestions", async (req, res) => {
     console.log({ response });
   } catch (err) {}
 });
+
+server.delete("/suggestions/:id", async (req, res) => {
+  const id = req.params.id;
+  try {
+    const response = await deleteSuggestion(id);
+    return res.status(200).send(response.data);
+  }catch(err) {
+    return res.status(400).send({ message: err.message });
+  }
+})
 
 // Schedule the job to run at specific hours
 schedule.scheduleJob("0 8,12,14,18,20 * * *", addSuggestionsToDatabase);
