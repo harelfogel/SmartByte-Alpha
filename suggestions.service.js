@@ -1,4 +1,7 @@
-const Suggestion = require("./Suggestion");
+const Suggestion = require('./Suggestion');
+const axios = require('axios');
+const { getLatestSensorValues } = require('./sensorValues.service');
+const { getCurrentSeasonAndHour } = require('./time.service');
 
 const getSuggestions = async () => {
   try {
@@ -10,17 +13,45 @@ const getSuggestions = async () => {
   }
 };
 
-// const updateSuggestions = async (id, key = "isNew", value = false) => {
-//   try {
-//     console.log({id, key, value});
-//     const response = await Suggestion.updateOne({ id: '72849164' }, { isNew: false });
-//     console.log(response);
-//     return { statusCode: 200, data: response.data };
-//   } catch (error) {
-//     console.log(`Error updating suggestion: ${error}`);
-//     return { statusCode: 500, data: "Internal server error" };
-//   }
-// };
+async function addSuggestionsToDatabase() {
+  const latestSensorValues = await getLatestSensorValues();
+  const { season, hour } = getCurrentSeasonAndHour();
+  const currentTemperature = latestSensorValues.temperature;
+  const currentHumidity = latestSensorValues.humidity;
+  const currentDistance = latestSensorValues.distance;
+
+  const devices = ['lights', 'fan', 'ac_status', 'heater_switch', 'laundry_machine'];
+  const evidence = {
+    'temperature': currentTemperature,
+    'humidity': currentHumidity,
+    'distance_from_house': currentDistance,
+    'season': season,
+    'hour':hour
+  };
+
+  // Call the recommend_device function with the evidence
+  const response = await axios.post('http://localhost:5000/recommend_device', {
+    devices: devices,
+    evidence: evidence
+  });
+
+  const recommendedDevices = response.data;
+
+  // Add the suggestions to the MongoDB database
+  for (const recommendedDevice of recommendedDevices) {
+    const suggestion = new Suggestion({
+      device: recommendedDevice.device,
+      evidence: {
+        Temperature: evidence.temperature,
+        distance: evidence.distance_from_house,
+        humidity: evidence.humidity
+      },
+      state: "on"
+    });
+    await suggestion.save();
+  }
+}
+
 
 const updateSuggestions = async (key, value) => {
   try {
@@ -38,27 +69,8 @@ const updateSuggestions = async (key, value) => {
   }
 };
 
-const addNewSuggestion = async (suggestion) => {
-  try {
-    console.log({ suggestion });
-    const newSuggestion = new Suggestion({ suggestion });
-    newSuggestion.id = Math.floor(10000000 + Math.random() * 90000000);
-    console.log({newSuggestion})
-    // await newSuggestion.save();
-
-    return {
-      statusCode: 200,
-      message: "Suggestion added successfully",
-    };
-  } catch (error) {
-    return { statusCode: 400, data: "Can't add suggestion: " + error.message };
-  }
-};
-
-// newRule.id = Math.floor(10000000 + Math.random() * 90000000);
 
 module.exports = {
   getSuggestions,
-  updateSuggestions,
-  addNewSuggestion,
+  addSuggestionsToDatabase
 };
