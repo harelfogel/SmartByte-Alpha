@@ -12,6 +12,10 @@ const deviceSchema = new mongoose.Schema({
   name: {
     type: String,
     default: true
+  },
+  threshold: {  
+    type: Number,
+    default: 0.6
   }
 });
 

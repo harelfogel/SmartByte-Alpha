@@ -36,6 +36,7 @@ const {
   updateSuggestions,
   addSuggestionMenually,
   deleteSuggestion,
+  updateRulesForExistingSuggestions,
 } = require("./suggestions.service.js");
 const { getDevices } = require("./devices.service.js");
 const {
@@ -53,6 +54,7 @@ const connectToWs = require("./ws.js");
 
 const { getLatestSensorValues } = require("./sensorValues.service.js");
 const { response } = require("express");
+const Device = require("./Device.js");
 
 require("dotenv").config();
 
@@ -240,6 +242,12 @@ server.get("/devices", async (req, res) => {
   return res.json(devices);
 });
 
+server.get("/devices_with_thresholds", async (req, res) => {
+  const devices = await Device.find({}, { device_id: 1, threshold: 1, _id: 0 });
+  return res.json(devices);
+});
+
+
 // --------------------------------- Machine Learnign-Recoomnadations ---------------------------------
 server.get("/update_data", async (req, res) => {
   try {
@@ -273,12 +281,19 @@ server.get("/recommend_device", async (req, res) => {
     };
 
     const recommendation = await callBayesianScript(requestData);
-    res.json(recommendation);
+    const recommendationsArray = recommendation.map((item, index) => {
+      return {
+        device: devices[index],
+        state: item.recommendation,
+      };
+    });
+    res.json(recommendationsArray);
   } catch (error) {
     console.error(`Error getting recommendation: ${error}`);
     res.status(500).json({ message: "Internal server error" });
   }
 });
+
 
 // --------------------------------- Suggestions ---------------------------------
 server.get("/suggestions", async (req, res) => {
@@ -343,7 +358,6 @@ server.delete("/suggestions/:id", async (req, res) => {
 
 // Schedule the job to run at specific hours
 schedule.scheduleJob("0 8,12,14,18,20 * * *", addSuggestionsToDatabase);
-schedule.scheduleJob("30 8 * * *", addSuggestionsToDatabase);
 
 // --------------------------------- Running the ML script ---------------------------------
 

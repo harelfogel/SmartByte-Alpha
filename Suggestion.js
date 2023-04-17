@@ -10,6 +10,7 @@ const SuggestionSchema = new mongoose.Schema({
   },
   mode: String,
   state: String,
+  rule:String,
   is_new: Boolean
 });
 
