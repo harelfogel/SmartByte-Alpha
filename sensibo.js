@@ -121,6 +121,22 @@ const removeAllSensorValues = async () => {
     }
   };
 
+const updateAcMode = async (mode) => {
+  try {
+    const response = await axios.patch(
+      `https://home.sensibo.com/api/v2/pods/${process.env.SENSIBO_DEVICE_ID}/acStates?apiKey=${process.env.SENSIBO_API_KEY}`,
+      {
+        acState: {
+          on: true,
+          mode: mode,
+        },
+      }
+    );
+    return { statusCode: 200, data: response.data.result };
+  } catch (err) {
+    return { statusCode: 403, data: err.message };
+  }
+};
 
 
 module.exports = {
@@ -129,5 +145,6 @@ module.exports = {
     getSensiboSensors,
     parseSensorAndWriteToMongo,
     removeAllSensorValues,
-    analyzeFunc
+    analyzeFunc,
+    updateAcMode
 }

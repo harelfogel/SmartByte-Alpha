@@ -8,6 +8,7 @@ const {
   getSensiboSensors,
   parseSensorAndWriteToMongo,
   removeAllSensorValues,
+  updateAcMode,
 } = require("./sensibo.js");
 const cors = require("cors");
 const { homeConnectAuth, homeConnectToken } = require("./homeConnect.js");
@@ -199,6 +200,17 @@ server.get("/sensibo", async (req, res) => {
 server.get("/temperature", async (req, res) => {
   const response = await getSensiboSensors();
   res.json(response.data.result);
+});
+
+server.post("/sensibo/mode", async (req, res) => {
+  try {
+    const mode = req.body.mode;
+    await updateAcMode(mode);
+    res.json({ statusCode: 200 });
+  } catch (err) {
+    return res.status(400).json({ message: err.message });
+  }
+  
 });
 
 // --------------------------------- Tuya- Heater ---------------------------------
