@@ -9,6 +9,7 @@ const {
   parseSensorAndWriteToMongo,
   removeAllSensorValues,
   updateAcMode,
+  updateSensiboMode,
 } = require("./sensibo.js");
 const cors = require("cors");
 const { homeConnectAuth, homeConnectToken } = require("./homeConnect.js");
@@ -39,7 +40,7 @@ const {
   deleteSuggestion,
   updateRulesForExistingSuggestions,
 } = require("./suggestions.service.js");
-const { getDevices } = require("./devices.service.js");
+const { getDevices, updateDeviceModeInDatabase } = require("./devices.service.js");
 const {
   callBayesianScript,
   runBayesianScript,
@@ -202,16 +203,29 @@ server.get("/temperature", async (req, res) => {
   res.json(response.data.result);
 });
 
-server.post("/sensibo/mode", async (req, res) => {
-  try {
-    const mode = req.body.mode;
-    await updateAcMode(mode);
-    res.json({ statusCode: 200 });
-  } catch (err) {
-    return res.status(400).json({ message: err.message });
-  }
+// server.post("/sensibo/mode", async (req, res) => {
+//   try {
+//     const mode = req.body.mode;
+//     await updateAcMode(mode);
+//     res.json({ statusCode: 200 });
+//   } catch (err) {
+//     return res.status(400).json({ message: err.message });
+//   }
   
+// });
+
+
+server.post('/sensibo/mode', async (req, res) => {
+  const { deviceId, mode } = req.body;
+  const result = await updateSensiboMode(deviceId, mode);
+
+  if (result.success) {
+    res.status(200).json(result);
+  } else {
+    res.status(500).json(result);
+  }
 });
+
 
 // --------------------------------- Tuya- Heater ---------------------------------
 
@@ -258,6 +272,19 @@ server.get("/devices_with_thresholds", async (req, res) => {
   const devices = await Device.find({}, { device_id: 1, threshold: 1, _id: 0 });
   return res.json(devices);
 });
+
+
+server.put("/devices/mode", async (req, res) => {
+  const { deviceId, mode } = req.body;
+
+  try {
+    await updateDeviceModeInDatabase(deviceId, mode);
+    res.status(200).json({ success: true });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Error updating mode in the database' });
+  }
+});
+
 
 
 // --------------------------------- Machine Learnign-Recoomnadations ---------------------------------

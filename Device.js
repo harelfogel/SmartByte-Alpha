@@ -16,6 +16,10 @@ const deviceSchema = new mongoose.Schema({
   threshold: {  
     type: Number,
     default: 0.6
+  },
+  mode: {
+    type: mongoose.Schema.Types.Mixed, // Flexible field to store different sets of properties
+    default: {}
   }
 });
 
