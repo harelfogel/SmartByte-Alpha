@@ -52,7 +52,7 @@ const jwt = require("jsonwebtoken");
 const axios = require("axios");
 const schedule = require("node-schedule");
 
-const connectToWs = require("./ws.js");
+const {connectToWs} = require("./ws.js");
 
 const { getLatestSensorValues } = require("./sensorValues.service.js");
 const { response } = require("express");
@@ -397,6 +397,7 @@ server.delete("/suggestions/:id", async (req, res) => {
 
 // Schedule the job to run at specific hours
 schedule.scheduleJob("0 8,12,14,18,20 * * *", addSuggestionsToDatabase);
+// schedule.scheduleJob("0 * * * * *", addSuggestionsToDatabase);
 
 // --------------------------------- Running the ML script ---------------------------------
 

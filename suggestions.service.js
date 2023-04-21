@@ -3,6 +3,7 @@ const axios = require("axios");
 const { getLatestSensorValues } = require("./sensorValues.service");
 const { getCurrentSeasonAndHour } = require("./time.service");
 const { convertSeasonToNumber, discretizeDistance, discretizeHour, discretizeHumidity, discretizeTemperature } = require("./utils");
+const { clients } = require("./ws");
 
 const temperatureMap = {
   1: 15,
@@ -93,7 +94,7 @@ async function addSuggestionsToDatabase() {
     for (const recommendedDevice of recommendedDevices) {
       if (recommendedDevice.recommendation === "on") {
         const deviceName = recommendedDevice.variables[0]; // Extract the device name from the variables array
-    
+        
         const suggestionData = {
           device: deviceName,
           evidence: {
@@ -103,18 +104,22 @@ async function addSuggestionsToDatabase() {
           },
           state: "on",
         };
-    
+        
         const rule = generateRule(suggestionData);
-    
+        
         // Check if a suggestion with the same rule already exists in the database
         const existingSuggestion = await Suggestion.findOne({ rule: rule });
     
         // If a suggestion with the same rule doesn't exist, save the new suggestion
         if (!existingSuggestion) {
+          clients.forEach(client => {
+            client.send('New Suggestion Added!');
+          })
           const suggestion = new Suggestion({
             id: Math.floor(10000000 + Math.random() * 90000000),
             ...suggestionData,
             rule,  // Add the rule property
+            is_new: true
           });
           console.log({suggestion});
           await suggestion.save();
