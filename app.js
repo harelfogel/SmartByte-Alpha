@@ -27,7 +27,7 @@ const {
 const {
   insertRuleToDB,
   getAllRules,
-  setRuleActive,
+  updateRule,
   deleteRuleById,
 } = require("./rules.service.js");
 const { switchHeaterState } = require("./heaterController.js");
@@ -135,9 +135,11 @@ server.post("/rules", async (req, res) => {
 });
 
 server.post("/rules/:id", async (req, res) => {
-  const { isActive } = req.body;
+  // const { isActive } = req.body;
+  const updateFields = {...req.body};
+  console.log({updateFields});
   const id = req.params.id;
-  const response = await setRuleActive(id, isActive);
+  const response = await updateRule(id, updateFields);
   return res.status(response.statusCode).send(response.message);
 });
 
