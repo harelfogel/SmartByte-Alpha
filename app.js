@@ -10,6 +10,7 @@ const {
   removeAllSensorValues,
   updateAcMode,
   updateSensiboMode,
+  analyzeFunc,
 } = require("./sensibo.js");
 const cors = require("cors");
 const { homeConnectAuth, homeConnectToken } = require("./homeConnect.js");
@@ -69,6 +70,8 @@ server.use(cors({ origin: true }));
 connectDB();
 
 connectToWs();
+
+
 
 //Handle get requests
 server.get("/", function (req, res) {
@@ -416,5 +419,6 @@ schedule.scheduleJob("0 8,12,14,18,20 * * *", addSuggestionsToDatabase);
 //     await getFunctionsFromDB();
 
 // }, 20000);
+
 
 server.listen(port, () => console.log(`listening on port ${port}`));

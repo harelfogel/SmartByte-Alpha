@@ -79,7 +79,7 @@ async function addSuggestionsToDatabase() {
       humidity: discretizeHumidity(parseFloat(currentHumidity)),
       distance_from_house: discretizeDistance(parseFloat(currentDistance)),
       season: convertSeasonToNumber(season),
-      hour: discretizeHour(hour),
+      hour: 3,
     };
 
 
