@@ -2,51 +2,56 @@ const Suggestion = require("./Suggestion");
 const axios = require("axios");
 const { getLatestSensorValues } = require("./sensorValues.service");
 const { getCurrentSeasonAndHour } = require("./time.service");
-const { convertSeasonToNumber, discretizeDistance, discretizeHour, discretizeHumidity, discretizeTemperature } = require("./utils");
+const {
+  convertSeasonToNumber,
+  discretizeDistance,
+  discretizeHour,
+  discretizeHumidity,
+  discretizeTemperature,
+} = require("./utils");
 const { clients } = require("./ws");
 
 const temperatureMap = {
   1: 15,
   2: 20,
   3: 27,
-  4: 35
-}
+  4: 35,
+};
 const generateRule = (suggestion) => {
   const { device, evidence, state } = suggestion;
-  const isAcDevice = device.toLowerCase() === 'ac';
-  const conditions = Object.entries(evidence).map(condition => {
-    const [key, value] = condition;
-    return `${key} < ${temperatureMap[value]}`;
-  }).join(' AND ');
+  const isAcDevice = device.toLowerCase() === "ac";
+  const conditions = Object.entries(evidence)
+    .map((condition, idx) => {
+      const [key, value] = condition;
+      return `${key} < ${temperatureMap[value]}`;
+    })
+    .join(" AND ");
 
   const action = `("${device} ${state}")`;
 
   const generatedRule = `IF ${conditions} THEN TURN${action}`;
   return generatedRule;
-
-}
+};
 
 async function updateRulesForExistingSuggestions() {
   try {
     // Fetch suggestions without a 'rule' key
-    const suggestionsWithoutRule = await Suggestion.find({ rule: { $exists: false } });
+    const suggestionsWithoutRule = await Suggestion.find({
+      rule: { $exists: false },
+    });
 
     // Iterate through the suggestions and generate a rule for each
     for (const suggestion of suggestionsWithoutRule) {
       const rule = generateRule(suggestion); // Use the generateRule function to generate the rule
-      await Suggestion.updateOne({ id: suggestion.id }, { $set: { rule: rule } }); // Update the suggestion with the generated rule
+      await Suggestion.updateOne(
+        { id: suggestion.id },
+        { $set: { rule: rule } }
+      ); // Update the suggestion with the generated rule
     }
   } catch (error) {
-
-
     console.error(`Error updating rules for existing suggestions: ${error}`);
   }
-
 }
-
-
-
-
 
 const getSuggestions = async () => {
   try {
@@ -82,19 +87,21 @@ async function addSuggestionsToDatabase() {
       hour: 3,
     };
 
-
     // Call the recommend_device function with the evidence
-    const response = await axios.post("http://localhost:5000/recommend_device", {
-      devices: devices,
-      evidence: evidence,
-    });
+    const response = await axios.post(
+      "http://localhost:5000/recommend_device",
+      {
+        devices: devices,
+        evidence: evidence,
+      }
+    );
 
     const recommendedDevices = response.data;
     // Add the suggestions to the MongoDB database
     for (const recommendedDevice of recommendedDevices) {
       if (recommendedDevice.recommendation === "on") {
         const deviceName = recommendedDevice.variables[0]; // Extract the device name from the variables array
-        
+
         const suggestionData = {
           device: deviceName,
           evidence: {
@@ -104,34 +111,32 @@ async function addSuggestionsToDatabase() {
           },
           state: "on",
         };
-        
+
         const rule = generateRule(suggestionData);
-        
+
         // Check if a suggestion with the same rule already exists in the database
         const existingSuggestion = await Suggestion.findOne({ rule: rule });
-    
+
         // If a suggestion with the same rule doesn't exist, save the new suggestion
         if (!existingSuggestion) {
-          clients.forEach(client => {
-            client.send('New Suggestion Added!');
-          })
+          clients.forEach((client) => {
+            client.send("New Suggestion Added!");
+          });
           const suggestion = new Suggestion({
             id: Math.floor(10000000 + Math.random() * 90000000),
             ...suggestionData,
-            rule,  // Add the rule property
-            is_new: true
+            rule, // Add the rule property
+            is_new: true,
           });
-          console.log({suggestion});
+          console.log({ suggestion });
           await suggestion.save();
         }
       }
     }
-    
   } catch (error) {
-    console.error('Error while making request to Python server:', error);
+    console.error("Error while making request to Python server:", error);
   }
 }
-
 
 const addSuggestionMenually = async (suggestion) => {
   try {
@@ -174,5 +179,5 @@ module.exports = {
   updateSuggestions,
   deleteSuggestion,
   updateRulesForExistingSuggestions,
-  generateRule
+  generateRule,
 };

@@ -58,6 +58,7 @@ const {connectToWs} = require("./ws.js");
 const { getLatestSensorValues } = require("./sensorValues.service.js");
 const { response } = require("express");
 const Device = require("./Device.js");
+const { getRooms } = require("./rooms.service.js");
 
 require("dotenv").config();
 
@@ -399,6 +400,23 @@ server.delete("/suggestions/:id", async (req, res) => {
     return res.status(400).send({ message: err.message });
   }
 })
+
+
+
+// --------------------------------- Rooms ---------------------------------
+
+server.get("/rooms", async (req, res) => {
+  console.log("GET ROOMS")
+  try {
+    const response = await getRooms();
+    console.log("Yovel", response.data )
+    return res.status(200).send(response.data);
+  } catch (err) {
+    return res.status(400).send({ message: err.message });
+  }
+});
+
+
 
 // Schedule the job to run at specific hours
 schedule.scheduleJob("0 8,12,14,18,20 * * *", addSuggestionsToDatabase);
