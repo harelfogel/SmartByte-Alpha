@@ -89,6 +89,7 @@ const switchAcState = async (state, temperature = null) => {
         { device_id: "9EimtVDZ" },
         { state: state ? "on" : "off" }
       );
+      await getFunctionsFromDB()
       return { statusCode: 200, data: response.data.result };
     } else {
       throw new Error("Temperature has to be between 16 and 30");
@@ -184,8 +185,11 @@ const updateSensiboMode = async (deviceId, mode) => {
       },
     });
     const updateDB=await updateDeviceModeInDatabase(deviceId,mode);
-    if((response.status==200) && updateDB)
-    return { success: true, data: response.data };
+    
+    if((response.status==200) && updateDB){
+      await getFunctionsFromDB()
+      return { success: true, data: response.data };
+    }
 
   } catch (error) {
     console.error("Error updating Sensibo mode:", error);
