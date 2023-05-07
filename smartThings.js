@@ -37,7 +37,7 @@ const switchWasherWater = async (deviceId, status) => {
         { headers: {
             'Authorization': `Bearer ${TOKEN}`
         }})
-        await getFunctionsFromDB()
+        await addingDataToCsv()()
         return response;
     }
     catch(err) {
