@@ -1,5 +1,6 @@
 const { default: axios } = require("axios");
 const Device = require("./Device");
+const { addingDataToCsv } = require("./machineLearning.js");
 
 
 
@@ -14,6 +15,7 @@ const switchHeaterState = async (value) => {
             value
         })
         await Device.updateOne({ device_id: '061751378caab5219d31' }, { state: (value===1) ? 'on' : 'off' });
+        await addingDataToCsv()
         return response.data;
     } catch (err) {
         console.log(err)

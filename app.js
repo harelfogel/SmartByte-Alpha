@@ -308,7 +308,8 @@ server.post('/sensibo/mode', async (req, res) => {
 
 server.post("/heater", async (req, res) => {
   const { value } = req.body;
-  const response = await switchHeaterState(value);
+  const response = await switchHeaterqState(value);
+  await addingDataToCsv()
   res.json({ response });
 });
 
