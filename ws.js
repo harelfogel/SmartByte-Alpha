@@ -11,7 +11,7 @@ const connectToWs = () => {
     console.log("Client connected");
     clients.push(ws);
 
-    ws.send("Welcome to the WebSocket Server!");
+    // ws.send("Welcome to the WebSocket Server!");
   });
 
   wss.clients.forEach((client) => {

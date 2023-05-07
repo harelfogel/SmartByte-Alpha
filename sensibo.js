@@ -148,8 +148,6 @@ const updateSensiboMode = async (deviceId, mode) => {
         mode,
       },
     });
-
-    console.log(deviceId);
     const updateDB=await updateDeviceModeInDatabase(deviceId,mode);
     if((response.status==200) && updateDB)
     return { success: true, data: response.data };

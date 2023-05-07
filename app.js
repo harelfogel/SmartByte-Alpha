@@ -1,5 +1,6 @@
 require("dotenv").config();
 const getClientDetails = require("./smartThings.js");
+const { getLaundryDetails } = require('./smartthings');
 const express = require("express");
 const connectDB = require("./config");
 const {
@@ -16,7 +17,7 @@ const { homeConnectAuth, homeConnectToken } = require("./homeConnect.js");
 const {
   smartThingsGetDevices,
   switchWasherWater,
-} = require("./smartThings2.js");
+} = require("./smartThings.js");
 const { checkforUserDistance } = require("./location.js");
 const {
   removeSensorValueByType,
@@ -51,6 +52,8 @@ const { signInUser, registerUser } = require("./users.service");
 const jwt = require("jsonwebtoken");
 const axios = require("axios");
 const schedule = require("node-schedule");
+const { toggleLaundry } = require("./smartthings");
+
 
 const {connectToWs} = require("./ws.js");
 
@@ -81,8 +84,7 @@ server.post("/", function (req, res, next) {
   smartapp.handleHttpCallback(req, res);
 });
 
-// --------------------------------- Sign up ---------------------------------
-
+// --------------------------------- Sign up 
 server.post("/register", async (req, res) => {
   const { fullName, email, password, role } = req.body;
   const response = await registerUser(fullName, email, password, role);
@@ -163,10 +165,60 @@ server.delete("/rules/:id", async (req, res) => {
 // --------------------------------- SmartThings- Laundry ---------------------------------
 
 //Handle get requests
-server.get("/smartthings", function (req, res) {
-  getClientDetails();
+server.get("/smartthings", async (req, res) =>{
+  const response= await smartThingsGetDevices();
   res.json({ message: `Welcome to smartthings details` });
 });
+
+server.get('/laundry/details/', async (req, res) => {
+  try {
+      const details = await getLaundryDetails();
+      res.json(details);
+      console.log(details);
+  } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Failed to get laundry details' });
+  }
+});
+
+server.post("/smartthings/toggle", function (req, res) {
+  const newState = req.body.state;
+  const deviceId = req.body.deviceId;
+  toggleLaundry(newState, deviceId)
+    .then(() => res.json({ statusCode: 200, message: "Toggled successfully" }))
+    .catch((err) => res.status(500).json({ statusCode: 500, message: "Failed to toggle", error: err.message }));
+});
+
+server.get('/laundry/details', async (req, res) => {
+  try {
+    const details = await getLaundryDetails();
+    if (details) {
+      res.json({ statusCode: 200, message: 'Laundry details fetched successfully', details });
+    } else {
+      res.status(500).json({ statusCode: 500, message: 'Failed to fetch laundry details' });
+    }
+  } catch (error) {
+    res.status(500).json({ statusCode: 500, message: 'Failed to fetch laundry details', error: error.message });
+  }
+});
+
+server.post("/laundry/update", async (req, res) => {
+  const { deviceId, temperature, rinse, spin } = req.body;
+  
+  try {
+    const updatedDevice = await Device.findOneAndUpdate(
+      { device_id: deviceId },
+      { "details.temperature": temperature, "details.rinse": rinse, "details.spin": spin },
+      { new: true }
+    );
+    res.json({ statusCode: 200, message: "Updated successfully", device: updatedDevice });
+  } catch (error) {
+    res.status(500).json({ statusCode: 500, message: "Failed to update", error: error.message });
+  }
+});
+
+
+
 
 server.get("/homeConnect", (req, res) => {
   homeConnectAuth();
@@ -179,12 +231,33 @@ server.get("/homeConnect/callback", (req, res) => {
   res.json({ message: "token" });
 });
 
+
+server.post("/laundry/update", async (req, res) => {
+  const { deviceId, temperature, rinse, spin } = req.body;
+  
+  try {
+    const updatedDevice = await Device.findOneAndUpdate(
+      { device_id: deviceId },
+      { "details.temperature": temperature, "details.rinse": rinse, "details.spin": spin },
+      { new: true }
+    );
+
+    // Update the SmartThings API here
+    await switchWasherWater(deviceId, true); // You may need to modify this call based on the changes you want to make to the SmartThings API
+
+    res.json({ statusCode: 200, message: "Updated successfully", device: updatedDevice });
+  } catch (error) {
+    res.status(500).json({ statusCode: 500, message: "Failed to update", error: error.message });
+  }
+});
+
 // --------------------------------- Sensibo- AC ---------------------------------
 
 server.post("/sensibo", async (req, res) => {
   try {
     console.log("-----------sensibo---------------");
     const state = req.body.state;
+    console.log(req.body);
     const temperature = req.body.temperature || null;
     console.log({ state, temperature });
     await switchAcState(state, temperature);
@@ -195,7 +268,6 @@ server.post("/sensibo", async (req, res) => {
 });
 
 server.get("/sensibo", async (req, res) => {
-  console.log("sensibo get acState");
   const state = await getAcState();
   res.json({ state });
 });
@@ -379,7 +451,6 @@ server.put("/suggestions", async (req, res) => {
 });
 
 server.post("/suggestions", async (req, res) => {
-  console.log("ADD MANUALLY")
   try {
     const response = await addSuggestionMenually(req.body);
     return res.status(200).send(response.data);
@@ -398,9 +469,9 @@ server.delete("/suggestions/:id", async (req, res) => {
 })
 
 // Schedule the job to run at specific hours
-schedule.scheduleJob("0 8,12,14,18,20 * * *", addSuggestionsToDatabase);
-// schedule.scheduleJob("0 * * * * *", addSuggestionsToDatabase);
-
+//schedule.scheduleJob("0 8,12,14,18,20 * * *", addSuggestionsToDatabase);
+//schedule.scheduleJob("0 * * * * *", addSuggestionsToDatabase);
+addSuggestionsToDatabase();
 // --------------------------------- Running the ML script ---------------------------------
 
 // const BAYESIAN_SCRIPT_INTERVAL = 600000; // 10 minutes in milliseconds
