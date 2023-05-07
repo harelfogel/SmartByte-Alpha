@@ -1,17 +1,18 @@
 const mongoose = require('mongoose');
 
+const EvidenceSchema = new mongoose.Schema({
+  type: String,
+  value: Number,
+});
+
 const SuggestionSchema = new mongoose.Schema({
   id: String,
   device: String,
-  evidence: {
-    Temperature: Number,
-    distance: Number,
-    humidity: Number,
-  },
+  evidence: [EvidenceSchema],
   mode: String,
   state: String,
-  rule:String,
-  is_new: Boolean
+  rule: String,
+  is_new: Boolean,
 });
 
 const Suggestion = mongoose.model('suggestions', SuggestionSchema);
