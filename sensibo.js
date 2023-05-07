@@ -89,7 +89,7 @@ const switchAcState = async (state, temperature = null) => {
         { device_id: "9EimtVDZ" },
         { state: state ? "on" : "off" }
       );
-      await getFunctionsFromDB()
+      await addingDataToCsv()
       return { statusCode: 200, data: response.data.result };
     } else {
       throw new Error("Temperature has to be between 16 and 30");
@@ -187,7 +187,7 @@ const updateSensiboMode = async (deviceId, mode) => {
     const updateDB=await updateDeviceModeInDatabase(deviceId,mode);
     
     if((response.status==200) && updateDB){
-      await getFunctionsFromDB()
+      await addingDataToCsv()
       return { success: true, data: response.data };
     }
 
