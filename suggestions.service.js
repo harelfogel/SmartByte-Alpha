@@ -17,21 +17,137 @@ const temperatureMap = {
   3: 27,
   4: 35,
 };
-const generateRule = (suggestion) => {
-  const { device, evidence, state } = suggestion;
-  const isAcDevice = device.toLowerCase() === "ac";
-  const conditions = Object.entries(evidence)
-    .map((condition, idx) => {
-      const [key, value] = condition;
-      return `${key} < ${temperatureMap[value]}`;
-    })
-    .join(" AND ");
+// const generateRule = (suggestion) => {
+//   const { device, evidence, state } = suggestion;
+//   const isAcDevice = device.toLowerCase() === "ac";
+//   const conditions = Object.entries(evidence)
+//     .map((condition, idx) => {
+//       const [key, value] = condition;
+//       return `${key} < ${temperatureMap[value]}`;
+//     })
+//     .join(" AND ");
+//   }
+const calculateStats = (evidenceValues) => {
+  const n = evidenceValues.length;
+  const mean = evidenceValues.reduce((sum, value) => sum + value, 0) / n;
+  const median = n % 2 === 0 ? (evidenceValues[n / 2 - 1] + evidenceValues[n / 2]) / 2 : evidenceValues[(n - 1) / 2];
+  const variance = evidenceValues.reduce((sum, value) => sum + Math.pow(value - mean, 2), 0) / (n - 1);
+  const stdDev = Math.sqrt(variance);
+  return { mean, median, stdDev };
+};
 
+
+const getActualEvidenceValue = async (strongestEvidence) => {
+  const latestSensorValues = await getLatestSensorValues(); // Get the latest sensor values
+  const { season, hour } = getCurrentSeasonAndHour(); // Get the current season and hour
+
+  const actualValues = {
+    temperature: latestSensorValues.temperature,
+    humidity: latestSensorValues.humidity,
+    distance_from_house: latestSensorValues.distance,
+    season: season,
+    hour: hour,
+  };
+  return [actualValues[strongestEvidence.evidence]];
+};
+
+const mapEvidenceValue = (evidenceType) => {
+  const evidenceMaps = {
+    hour: { 1: 'morning', 2: 'afternoon', 3: 'evening' },
+    temperature: { 1: 15, 2: 20, 3: 25, 4: 27 },
+    humidity: { 1: 30, 2: 60, 3: 90, 4: 100 },
+    distance_from_house: { 1: 0.01, 2: 20, 3: 100 },
+    season: { 1: 'winter', 2: 'spring', 3: 'summer', 4: 'fall' },
+  };
+  if (evidenceType in evidenceMaps) {
+    return evidenceMaps[evidenceType];
+  }
+
+  return undefined;
+};
+
+
+
+
+const getStrongestEvidence = (evidence) => {
+  const strongestEvidence = evidence.reduce((prev, current) =>
+    prev.value > current.value ? prev : current
+  );
+  return strongestEvidence;
+};
+
+const getComparisonOperator = (evidence, evidenceValues) => {
+  const stats = calculateStats(evidenceValues);
+  const comparisonOperators = ["<", ">", "<=", ">="];
+
+  // Calculate quartiles
+  const sortedValues = evidenceValues.slice().sort((a, b) => a - b);
+  const lowerQuartile = sortedValues[Math.floor(sortedValues.length * 0.25)];
+  const upperQuartile = sortedValues[Math.floor(sortedValues.length * 0.75)];
+
+  // Determine which comparison operator to use based on the median
+  let chosenOperator;
+  if (evidence === 'season' || evidence === 'hour') {
+    if (stats.median === stats.mode) {
+      chosenOperator = "==";
+    } else {
+      chosenOperator = "!=";
+    }
+  } else {
+    if (stats.median < lowerQuartile + (upperQuartile - lowerQuartile) * 0.25) {
+      chosenOperator = Math.random() < 0.5 ? ">" : ">=";
+    } else if (stats.median > lowerQuartile + (upperQuartile - lowerQuartile) * 0.75) {
+      chosenOperator = Math.random() < 0.5 ? "<" : "<=";
+    } else {
+      chosenOperator = Math.random() < 0.5 ? "<=" : ">=";
+    }
+  }
+  return chosenOperator;
+};
+
+
+const generateRule = async (suggestion) => {
+  const { device, strongest_evidence, state } = suggestion;
+  // Get strongest evidence
+  const strongestEvidence = getStrongestEvidence(strongest_evidence);
+  const mappedValue = mapEvidenceValue(strongestEvidence.evidence);
+  const actualValue = await getActualEvidenceValue(strongestEvidence);
+  if (!strongestEvidence.evidence || !mappedValue) {
+    console.error("Error: Undefined values encountered in strongest evidence or mapped value");
+    return;
+  }
+  // Get comparison operator
+  const comparisonOperators = getComparisonOperator(strongestEvidence.evidence, actualValue);
+  const operator = comparisonOperators[Math.floor(Math.random() * comparisonOperators.length)];
+
+  // Get the lower boundary of the current mapping
+  const discretizedActualValue = discretizeValue(strongestEvidence.evidence, actualValue); // <-- Added this line
+  const value = mappedValue[discretizedActualValue.toString()];
+  const conditions = `${strongestEvidence.evidence} ${comparisonOperators} ${value}`;
   const action = `("${device} ${state}")`;
 
   const generatedRule = `IF ${conditions} THEN TURN${action}`;
   return generatedRule;
 };
+
+// Add this new function for discretizing the actual value
+const discretizeValue = (evidenceType, actualValue) => {
+  switch (evidenceType) {
+    case 'temperature':
+      return discretizeTemperature(actualValue);
+    case 'humidity':
+      return discretizeHumidity(actualValue);
+    case 'distance_from_house':
+      return discretizeDistance(actualValue);
+    case 'hour':
+      return discretizeHour(actualValue);
+    case 'season':
+      return convertSeasonToNumber(actualValue);
+    default:
+      return undefined;
+  }
+};
+
 
 async function updateRulesForExistingSuggestions() {
   try {
@@ -65,6 +181,7 @@ const getSuggestions = async () => {
 
 async function addSuggestionsToDatabase() {
   try {
+    console.log('imhere is the add suggestion to the db');
     const latestSensorValues = await getLatestSensorValues();
     const { season, hour } = getCurrentSeasonAndHour();
     const currentTemperature = latestSensorValues.temperature;
@@ -100,19 +217,20 @@ async function addSuggestionsToDatabase() {
     // Add the suggestions to the MongoDB database
     for (const recommendedDevice of recommendedDevices) {
       if (recommendedDevice.recommendation === "on") {
+        console.log(recommendedDevice.strongest_evidence[0].evidence);
         const deviceName = recommendedDevice.variables[0]; // Extract the device name from the variables array
-
         const suggestionData = {
           device: deviceName,
-          evidence: {
-            Temperature: evidence.temperature,
-            distance: evidence.distance_from_house,
-            humidity: evidence.humidity,
-          },
+          strongest_evidence: [
+            {
+              evidence: recommendedDevice.strongest_evidence[0].evidence,
+              value: recommendedDevice.strongest_evidence[0].value,
+            },
+          ],
           state: "on",
         };
-
-        const rule = generateRule(suggestionData);
+        const rule = await generateRule(suggestionData);
+        console.log({ rule });
 
         // Check if a suggestion with the same rule already exists in the database
         const existingSuggestion = await Suggestion.findOne({ rule: rule });
@@ -128,7 +246,6 @@ async function addSuggestionsToDatabase() {
             rule, // Add the rule property
             is_new: true,
           });
-          console.log({ suggestion });
           await suggestion.save();
         }
       }
@@ -179,5 +296,5 @@ module.exports = {
   updateSuggestions,
   deleteSuggestion,
   updateRulesForExistingSuggestions,
-  generateRule,
-};
+  generateRule
+}

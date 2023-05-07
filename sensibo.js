@@ -177,20 +177,16 @@ const updateAcMode = async (mode) => {
 
 const updateSensiboMode = async (deviceId, mode) => {
   try {
-    const response = await axios.post(
-      `https://home.sensibo.com/api/v2/pods/${deviceId}/acStates?apiKey=${process.env.SENSIBO_API_KEY}`,
-      {
-        acState: {
-          on: true,
-          mode,
-        },
-      }
-    );
+    const response = await axios.post(`https://home.sensibo.com/api/v2/pods/${deviceId}/acStates?apiKey=${process.env.SENSIBO_API_KEY}`, {
+      acState: {
+        on: true,
+        mode,
+      },
+    });
+    const updateDB=await updateDeviceModeInDatabase(deviceId,mode);
+    if((response.status==200) && updateDB)
+    return { success: true, data: response.data };
 
-    console.log(deviceId);
-    const updateDB = await updateDeviceModeInDatabase(deviceId, mode);
-    if (response.status == 200 && updateDB)
-      return { success: true, data: response.data };
   } catch (error) {
     console.error("Error updating Sensibo mode:", error);
     return { success: false, message: "Error updating mode" };

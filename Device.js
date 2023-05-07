@@ -7,7 +7,6 @@ const deviceSchema = new mongoose.Schema({
   },
   state: {
     type: String,
-    default: false
   },
   name: {
     type: String,
@@ -18,7 +17,11 @@ const deviceSchema = new mongoose.Schema({
     default: 0.6
   },
   mode: {
-    type: mongoose.Schema.Types.Mixed, // Flexible field to store different sets of properties
+    type: mongoose.Schema.Types.Mixed,
+    default: {}
+  },
+  details: {
+    type: mongoose.Schema.Types.Mixed,
     default: {}
   }
 });
