@@ -58,7 +58,9 @@ const {connectToWs} = require("./ws.js");
 const { getLatestSensorValues } = require("./sensorValues.service.js");
 const { response } = require("express");
 const Device = require("./Device.js");
-const { getRooms } = require("./rooms.service.js");
+const { getRooms, getRoomById } = require("./rooms.service.js");
+const _ = require('lodash');
+
 
 require("dotenv").config();
 
@@ -188,6 +190,8 @@ server.get("/homeConnect/callback", (req, res) => {
 server.post("/sensibo", async (req, res) => {
   try {
     console.log("-----------sensibo---------------");
+    console.log(req.body)
+    
     const state = req.body.state;
     const temperature = req.body.temperature || null;
     console.log({ state, temperature });
@@ -225,7 +229,7 @@ server.post('/sensibo/mode', async (req, res) => {
   const { deviceId, mode } = req.body;
   const result = await updateSensiboMode(deviceId, mode);
 
-  if (result.success) {
+  if (_.get(result, 'success', false)) {
     res.status(200).json(result);
   } else {
     res.status(500).json(result);
@@ -410,6 +414,17 @@ server.get("/rooms", async (req, res) => {
   try {
     const response = await getRooms();
     console.log("Yovel", response.data )
+    return res.status(200).send(response.data);
+  } catch (err) {
+    return res.status(400).send({ message: err.message });
+  }
+});
+
+server.get("/rooms/:id", async (req, res) => {
+  console.log("GET ROOM")
+  try {
+    const id = req.params.id;
+    const response = await getRoomById(id);
     return res.status(200).send(response.data);
   } catch (err) {
     return res.status(400).send({ message: err.message });
