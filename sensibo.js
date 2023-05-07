@@ -1,6 +1,7 @@
 const { default: axios } = require("axios");
 const Device = require("./Device");
 const { updateDeviceModeInDatabase } = require("./devices.service");
+const { addingDataToCsv } = require("./machineLearning.js");
 const SensorValue = require("./SensorValue");
 
 const test = 0;
@@ -89,6 +90,7 @@ const switchAcState = async (state, temperature = null) => {
         { device_id: "9EimtVDZ" },
         { state: state ? "on" : "off" }
       );
+      console.log("-----------Adding data to csv---------------");
       await addingDataToCsv()
       return { statusCode: 200, data: response.data.result };
     } else {

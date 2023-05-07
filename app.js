@@ -187,7 +187,6 @@ server.get('/laundry/details/', async (req, res) => {
 server.post("/smartthings/toggle", function (req, res) {
   const newState = req.body.state;
   const deviceId = req.body.deviceId;
-  await getFunctionsFromDB()
   toggleLaundry(newState, deviceId)
     .then(() => res.json({ statusCode: 200, message: "Toggled successfully" }))
     .catch((err) => res.status(500).json({ statusCode: 500, message: "Failed to toggle", error: err.message }));
