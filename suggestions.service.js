@@ -181,7 +181,6 @@ const getSuggestions = async () => {
 
 async function addSuggestionsToDatabase() {
   try {
-    console.log('imhere is the add suggestion to the db');
     const latestSensorValues = await getLatestSensorValues();
     const { season, hour } = getCurrentSeasonAndHour();
     const currentTemperature = latestSensorValues.temperature;
@@ -217,7 +216,6 @@ async function addSuggestionsToDatabase() {
     // Add the suggestions to the MongoDB database
     for (const recommendedDevice of recommendedDevices) {
       if (recommendedDevice.recommendation === "on") {
-        console.log(recommendedDevice.strongest_evidence[0].evidence);
         const deviceName = recommendedDevice.variables[0]; // Extract the device name from the variables array
         const suggestionData = {
           device: deviceName,
@@ -230,7 +228,6 @@ async function addSuggestionsToDatabase() {
           state: "on",
         };
         const rule = await generateRule(suggestionData);
-        console.log({ rule });
 
         // Check if a suggestion with the same rule already exists in the database
         const existingSuggestion = await Suggestion.findOne({ rule: rule });

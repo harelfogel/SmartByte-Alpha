@@ -31,7 +31,6 @@ const analyzeFunc = async (func) => {
     const boolState = state === "on";
     const numberPattern = /\d+/g;
     const matches = func.match(numberPattern);
-    console.log({ matches });
     let degrees = null;
     if (
       matches &&
@@ -39,7 +38,6 @@ const analyzeFunc = async (func) => {
     ) {
       degrees = matches[0];
     }
-    console.log({ degrees });
     if (degrees) {
       // const degrees = matches[0];
       if (degrees > 30 || degrees < 16) {
@@ -52,14 +50,11 @@ const analyzeFunc = async (func) => {
     if(isWithDuration){
       //turn ac off after a duration
       setTimeout( async () => {
-        console.log('Turning off');
         response = await switchAcState(false);
-        console.log({response})
       }, durationInMiliSeconds)
     }
     return response;
   } catch (err) {
-    console.log(err);
     return { statusCode: 403, data: err.message };
   }
 };
@@ -72,9 +67,6 @@ const validateDegree = (degree) => {
 };
 
 const switchAcState = async (state, temperature = null) => {
-  // console.log("switchAcState")
-  // console.log({state, temperature})
-  console.log({ temperature });
   try {
     if (!temperature || validateDegree(temperature)) {
       const response = await axios.post(
@@ -127,7 +119,6 @@ const getSensiboSensors = async () => {
 
 const parseSensorAndWriteToMongo = async () => {
   try {
-    console.log(`parseSensorAndWriteToMongo`);
     // Fetch the current temperature and humidity values
     const response = await getSensiboSensors();
     const data = response.data.result[0];
@@ -153,9 +144,7 @@ const parseSensorAndWriteToMongo = async () => {
 
 const removeAllSensorValues = async () => {
   try {
-    console.log(`removeAllSensorValues`);
     const result = await SensorValue.deleteMany({});
-    //console.log(`Removed ${result.deletedCount} documents from the sensor_values collection.`);
   } catch (error) {
     console.error(error);
   }

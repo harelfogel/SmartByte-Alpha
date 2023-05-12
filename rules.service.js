@@ -13,9 +13,7 @@ const decideOnState = (rule) => {
 };
 
 const validateRule = (rule) => {
-  console.log({ rule });
   const parsedRule = rule.split(" ");
-  console.log({ parsedRule });
   if (parsedRule[0] !== "IF") {
     return {
       statusCode: 400,
@@ -36,7 +34,6 @@ const validateRule = (rule) => {
   //     }
   // }
   const sensor = parsedRule[1].split(operator)[0];
-  console.log({ sensor });
   if (
     sensor !== "Temperature" &&
     sensor !== "distance" &&
@@ -144,7 +141,6 @@ const updateRule = async (ruleId, updateFields) => {
     try {
       const rule = updateFields?.rule || "";
       if (rule !== "") {
-        console.log({rule});
         const ruleValidation = validateRule(rule);
         if (ruleValidation.statusCode === 400) {
           return {
@@ -169,7 +165,6 @@ const updateRule = async (ruleId, updateFields) => {
 async function deleteRuleById(ruleId) {
   try {
     const result = await Rule.deleteOne({ id: ruleId });
-    console.log("Deleted rule:", result);
 
     if (result.deletedCount === 1) {
       return { status: 200 };

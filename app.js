@@ -86,7 +86,6 @@ server.get("/", function (req, res) {
 
 /* Handle POST requests */
 server.post("/", function (req, res, next) {
-  console.log(req);
   smartapp.handleHttpCallback(req, res);
 });
 
@@ -136,7 +135,6 @@ server.get("/rules", async (req, res) => {
 
 // Define the route for adding a new rule
 server.post("/rules", async (req, res) => {
-  console.log(req.body);
   const { rule, isStrict } = req.body;
   const response = await insertRuleToDB(rule, isStrict);
   res.status(response.statusCode).send(response.message);
@@ -145,7 +143,6 @@ server.post("/rules", async (req, res) => {
 server.post("/rules/:id", async (req, res) => {
   // const { isActive } = req.body;
   const updateFields = {...req.body};
-  console.log({updateFields});
   const id = req.params.id;
   const response = await updateRule(id, updateFields);
   return res.status(response.statusCode).send(response.message);
@@ -156,7 +153,6 @@ server.delete("/rules/:id", async (req, res) => {
   try {
     // Assuming you have a function to delete the rule by its ID
     const response = await deleteRuleById(id);
-    console.log({ response });
 
     if (response.status === 200) {
       res.status(200).json({ message: "Rule deleted successfully" });
@@ -178,6 +174,7 @@ server.get("/smartthings", async (req, res) =>{
 
 server.get('/laundry/details/', async (req, res) => {
   try {
+      console.log("Yovel laundry")
       const details = await getLaundryDetails();
       res.json(details);
       console.log(details);
@@ -262,12 +259,9 @@ server.post("/laundry/update", async (req, res) => {
 server.post("/sensibo", async (req, res) => {
   try {
     console.log("-----------sensibo---------------");
-    console.log(req.body)
     
     const state = req.body.state;
-    console.log(req.body);
     const temperature = req.body.temperature || null;
-    console.log({ state, temperature });
     await switchAcState(state, temperature);
     res.json({ statusCode: 200 });
   } catch (err) {
@@ -325,7 +319,6 @@ server.get("/smartthings/v2/devices", async (req, res) => {
 });
 
 server.post("/smartthings/v2/switch", async (req, res) => {
-  console.log("smart things SWITCH", req.body.state);
 
   // const response = await switchWasherWater(req.body.state)
 });
@@ -452,7 +445,6 @@ server.put("/suggestions", async (req, res) => {
       [key, value] = suggestion;
       updateSuggestions(key, value);
     });
-    console.log({ response });
     res.status(200).send(response.data);
   } catch (err) {
     res.status(500).send({ message: err.message });
@@ -463,7 +455,6 @@ server.post("/suggestions", async (req, res) => {
   try {
     const response = await addSuggestionMenually(req.body);
     return res.status(200).send(response.data);
-    console.log({ response });
   } catch (err) {}
 });
 
@@ -482,10 +473,8 @@ server.delete("/suggestions/:id", async (req, res) => {
 // --------------------------------- Rooms ---------------------------------
 
 server.get("/rooms", async (req, res) => {
-  console.log("GET ROOMS")
   try {
     const response = await getRooms();
-    console.log("Yovel", response.data )
     return res.status(200).send(response.data);
   } catch (err) {
     return res.status(400).send({ message: err.message });
@@ -493,7 +482,6 @@ server.get("/rooms", async (req, res) => {
 });
 
 server.get("/rooms/:id", async (req, res) => {
-  console.log("GET ROOM")
   try {
     const id = req.params.id;
     const response = await getRoomById(id);
