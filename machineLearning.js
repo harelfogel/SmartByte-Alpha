@@ -157,6 +157,7 @@ async function addingDataToCsv() {
       const response = await axios.post('http://127.0.0.1:5000/update_data', {
         data: requestData
       });
+      console.log("Added data to csv file ended succussfully")
       return response.data;
     } catch (error) {
       console.error(`Python API error: ${error}`);
