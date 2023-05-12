@@ -7,7 +7,6 @@ const { switchAcState, analyzeFunc } = require("./sensibo");
 const removeSensorValueByType = async (sensorType) => {
     try {
         const response = await SensorValue.deleteMany({sensor_type: sensorType});
-        console.log(`${sensorType} has been deleted`)
     } catch(e) {
         console.log(e)
     }
@@ -17,7 +16,6 @@ const getFunctionsFromDB =  async () => {
     try {
         const functions = await Function.find();
         const response = await Function.deleteMany({});
-        console.log(response.data);
         functions.map(async (func) => {
             await activateDevices(func.function.toLowerCase())
         })
@@ -53,7 +51,6 @@ const getHeaterState = async () => {
     const SERVER_URL = 'https://tuyaapi.onrender.com'
     const response = await axios.get(`${SERVER_URL}/status`)
     const state = response.data.result[0].value;
-    console.log({state})
 }
 
 
