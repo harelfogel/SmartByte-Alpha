@@ -135,8 +135,11 @@ server.get("/rules", async (req, res) => {
 
 // Define the route for adding a new rule
 server.post("/rules", async (req, res) => {
-  const { rule, isStrict } = req.body;
+  console.log("add rule");
+  const { rule, isStrict = false } = req.body;
+  console.log({rule, isStrict});
   const response = await insertRuleToDB(rule, isStrict);
+  console.log("response", response.message)
   res.status(response.statusCode).send(response.message);
 });
 

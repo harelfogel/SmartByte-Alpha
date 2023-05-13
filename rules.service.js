@@ -37,7 +37,8 @@ const validateRule = (rule) => {
   if (
     sensor !== "Temperature" &&
     sensor !== "distance" &&
-    sensor !== "Humidity"
+    sensor !== "Humidity" && 
+    sensor !== "hour"
   ) {
     return {
       statusCode: 400,
@@ -57,6 +58,7 @@ const validateRule = (rule) => {
 const insertRuleToDB = async (rule) => {
   try {
     const ruleValidation = validateRule(rule);
+    console.log({ruleValidation})
     if (ruleValidation.statusCode === 400) {
       return {
         statusCode: ruleValidation.statusCode,
