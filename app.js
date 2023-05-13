@@ -64,6 +64,7 @@ const Device = require("./Device.js");
 const { getRooms, getRoomById } = require("./rooms.service.js");
 const _ = require('lodash');
 
+const { sendEmail } = require("./nodeMailer.js");
 
 require("dotenv").config();
 
@@ -89,7 +90,7 @@ server.post("/", function (req, res, next) {
   smartapp.handleHttpCallback(req, res);
 });
 
-// --------------------------------- Sign up 
+// --------------------------------- Sign up----------------------------------
 server.post("/register", async (req, res) => {
   const { fullName, email, password, role } = req.body;
   const response = await registerUser(fullName, email, password, role);
@@ -114,6 +115,27 @@ server.post("/login", async (req, res) => {
     res.status(response.status).json({ message: response.message });
   }
 });
+// --------------------------------- Notify Admin ---------------------------------
+
+server.post("/notifyadmin", async (req, res) => {
+  try {
+    const { subject, text } = req.body;
+    console.log('notifyadmin email');
+    console.log(req.body);
+    await sendEmail(subject, text);
+    res.status(200).send({ message: "Email sent successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({ message: "Failed to send email" });
+  }
+});
+
+// --------------------------------- user roles ---------------------------------
+
+// server-side code (Node.js)
+server.get('/api/user-role', (req, res) => {
+  res.json({ role: 'admin' }); // Replace 'admin' with the actual role based on your authentication logic
+});
 
 // --------------------------------- test yovel ---------------------------------
 server.post("/test", async (req, res) => {
@@ -126,6 +148,7 @@ server.post("/test", async (req, res) => {
     res.status(400).json(response.data);
   }
 });
+
 
 // --------------------------------- Rules ---------------------------------
 server.get("/rules", async (req, res) => {
@@ -180,7 +203,6 @@ server.get('/laundry/details/', async (req, res) => {
       console.log("Yovel laundry")
       const details = await getLaundryDetails();
       res.json(details);
-      console.log(details);
   } catch (error) {
       console.error(error);
       res.status(500).json({ error: 'Failed to get laundry details' });

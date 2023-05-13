@@ -55,7 +55,7 @@ const validateRule = (rule) => {
 
 // IF Temperature<10 THEN TURN("ac on 22")
 
-const insertRuleToDB = async (rule) => {
+const insertRuleToDB = async (rule,isStrict) => {
   try {
     const ruleValidation = validateRule(rule);
     console.log({ruleValidation})
@@ -65,7 +65,9 @@ const insertRuleToDB = async (rule) => {
         message: ruleValidation.message,
       };
     }
-    const newRule = new Rule({ rule });
+
+    console.log({isStrict});
+    const newRule = new Rule({ rule,isStrict });
     newRule.id = Math.floor(10000000 + Math.random() * 90000000);
     await newRule.save();
 
