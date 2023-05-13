@@ -127,7 +127,6 @@ const generateRule = async (suggestion) => {
   const action = `("${device} ${state}")`;
 
   const generatedRule = `IF ${conditions} THEN TURN${action}`;
-  console.log(generatedRule);
   return generatedRule;
 };
 
@@ -138,7 +137,6 @@ const discretizeValue = (evidenceType, actualValue) => {
     const arrOfNumbers = actualValue.match(numberPattern);
     actualValue = parseFloat(arrOfNumbers.join("."));
   }
-  console.log(actualValue)
   switch (evidenceType) {
     case 'temperature':
       return discretizeTemperature(actualValue);
@@ -209,11 +207,11 @@ async function addSuggestionsToDatabase() {
 
 
     const evidence = {
-      temperature: 2,
-      humidity: 4,
-      distance_from_house: 3,
-      season: 2,
-      hour: 3
+      temperature: discretizeTemperature(parseFloat(currentTemperatureValue)),
+      humidity: discretizeHumidity(parseFloat(currentHumidityValue)),
+      distance_from_house: discretizeDistance(parseFloat(currentDistanceValue)),
+      season: convertSeasonToNumber(season),
+      hour: discretizeHour(hour)
     };
 
     // Call the recommend_device function with the evidence
@@ -226,7 +224,6 @@ async function addSuggestionsToDatabase() {
     );
 
     const recommendedDevices = response.data;
-    console.log(recommendedDevices);
     // Add the suggestions to the MongoDB database
     for (const recommendedDevice of recommendedDevices) {
       if (recommendedDevice.recommendation === "on") {
