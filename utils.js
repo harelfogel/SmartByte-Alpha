@@ -1,15 +1,4 @@
 
-// const discretizeTemperature = (temperature) => {
-//   if (temperature <= 15) {
-//     return 1;
-//   } else if (temperature <= 20) {
-//     return 2;
-//   } else if (temperature <= 27) {
-//     return 3;
-//   } else {
-//     return 4;
-//   }
-// };
 
 const discretizeTemperature = (temperature) => {
   if (temperature <= 15) {  

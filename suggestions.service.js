@@ -195,12 +195,18 @@ async function addSuggestionsToDatabase() {
       "laundry_machine",
     ];
 
+    const numberPattern = /\d+/g;
+    const currentTemperatureValue = currentTemperature.match(numberPattern);
+    const currentHumidityValue = currentHumidity.match(numberPattern);
+    const currentDistanceValue = currentDistance.match(numberPattern);
+
+
     const evidence = {
-      temperature: discretizeTemperature(parseFloat(currentTemperature)),
-      humidity: discretizeHumidity(parseFloat(currentHumidity)),
-      distance_from_house: discretizeDistance(parseFloat(currentDistance)),
+      temperature: discretizeTemperature(parseFloat(currentTemperatureValue)),
+      humidity: discretizeHumidity(parseFloat(currentHumidityValue)),
+      distance_from_house: discretizeDistance(parseFloat(currentDistanceValue)),
       season: convertSeasonToNumber(season),
-      hour: 3,
+      hour: discretizeHour(hour)
     };
 
     // Call the recommend_device function with the evidence
