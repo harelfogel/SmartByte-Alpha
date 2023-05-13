@@ -109,6 +109,7 @@ const getComparisonOperator = (evidence, evidenceValues) => {
 const generateRule = async (suggestion) => {
   const { device, strongest_evidence, state } = suggestion;
   // Get strongest evidence
+
   const strongestEvidence = getStrongestEvidence(strongest_evidence);
   const mappedValue = mapEvidenceValue(strongestEvidence.evidence);
   const actualValue = await getActualEvidenceValue(strongestEvidence);
@@ -124,7 +125,7 @@ const generateRule = async (suggestion) => {
   const discretizedActualValue = discretizeValue(strongestEvidence.evidence, actualValue[0]); // <-- Added this line
   const value = mappedValue[discretizedActualValue.toString()];
   const conditions = `${strongestEvidence.evidence} ${comparisonOperators} ${value}`;
-  const action = `("${device} ${state}")`;
+  const action = `("${device.split('_')[0]} ${state}")`;
 
   const generatedRule = `IF ${conditions} THEN TURN${action}`;
   return generatedRule;
@@ -132,7 +133,7 @@ const generateRule = async (suggestion) => {
 
 // Add this new function for discretizing the actual value
 const discretizeValue = (evidenceType, actualValue) => {
-  if (typeof actualValue == "string") {
+  if (typeof actualValue == "string" && /\d/.test(actualValue)) {
     const numberPattern = /\d+/g; 
     const arrOfNumbers = actualValue.match(numberPattern);
     actualValue = parseFloat(arrOfNumbers.join("."));
@@ -207,11 +208,11 @@ async function addSuggestionsToDatabase() {
 
 
     const evidence = {
-      temperature: discretizeTemperature(parseFloat(currentTemperatureValue)),
-      humidity: discretizeHumidity(parseFloat(currentHumidityValue)),
-      distance_from_house: discretizeDistance(parseFloat(currentDistanceValue)),
-      season: convertSeasonToNumber(season),
-      hour: discretizeHour(hour)
+      temperature: 3,
+      humidity: 4,
+      distance_from_house: 3,
+      season: 2,
+      hour: 3
     };
 
     // Call the recommend_device function with the evidence
@@ -224,21 +225,29 @@ async function addSuggestionsToDatabase() {
     );
 
     const recommendedDevices = response.data;
+    let strongestEvidence;
     // Add the suggestions to the MongoDB database
     for (const recommendedDevice of recommendedDevices) {
       if (recommendedDevice.recommendation === "on") {
         const deviceName = recommendedDevice.variables[0]; // Extract the device name from the variables array
+        for (const findStrongEvidence of recommendedDevice.strongest_evidence){
+          if (findStrongEvidence.evidence !== "season") {
+            strongestEvidence = findStrongEvidence;
+            break;
+          }
+        }
         const suggestionData = {
           device: deviceName,
           strongest_evidence: [
             {
-              evidence: recommendedDevice.strongest_evidence[0].evidence,
+              evidence: strongestEvidence.evidence,
               value: recommendedDevice.strongest_evidence[0].value,
             },
           ],
           state: "on",
         };
         const rule = await generateRule(suggestionData);
+        console.log(rule)
 
         // Check if a suggestion with the same rule already exists in the database
         const existingSuggestion = await Suggestion.findOne({ rule: rule });
