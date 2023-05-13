@@ -208,11 +208,11 @@ async function addSuggestionsToDatabase() {
 
 
     const evidence = {
-      temperature: 3,
-      humidity: 4,
-      distance_from_house: 3,
-      season: 2,
-      hour: 3
+      temperature: discretizeTemperature(parseFloat(currentTemperatureValue)),
+      humidity: discretizeHumidity(parseFloat(currentHumidityValue)),
+      distance_from_house: discretizeDistance(parseFloat(currentDistanceValue)),
+      season: convertSeasonToNumber(season),
+      hour: discretizeHour(hour)
     };
 
     // Call the recommend_device function with the evidence
@@ -247,7 +247,6 @@ async function addSuggestionsToDatabase() {
           state: "on",
         };
         const rule = await generateRule(suggestionData);
-        console.log(rule)
 
         // Check if a suggestion with the same rule already exists in the database
         const existingSuggestion = await Suggestion.findOne({ rule: rule });
