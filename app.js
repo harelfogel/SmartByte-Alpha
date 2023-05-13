@@ -120,8 +120,6 @@ server.post("/login", async (req, res) => {
 server.post("/notifyadmin", async (req, res) => {
   try {
     const { subject, text } = req.body;
-    console.log('notifyadmin email');
-    console.log(req.body);
     await sendEmail(subject, text);
     res.status(200).send({ message: "Email sent successfully" });
   } catch (error) {
