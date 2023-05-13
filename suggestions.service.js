@@ -121,17 +121,24 @@ const generateRule = async (suggestion) => {
   const operator = comparisonOperators[Math.floor(Math.random() * comparisonOperators.length)];
 
   // Get the lower boundary of the current mapping
-  const discretizedActualValue = discretizeValue(strongestEvidence.evidence, actualValue); // <-- Added this line
+  const discretizedActualValue = discretizeValue(strongestEvidence.evidence, actualValue[0]); // <-- Added this line
   const value = mappedValue[discretizedActualValue.toString()];
   const conditions = `${strongestEvidence.evidence} ${comparisonOperators} ${value}`;
   const action = `("${device} ${state}")`;
 
   const generatedRule = `IF ${conditions} THEN TURN${action}`;
+  console.log(generatedRule);
   return generatedRule;
 };
 
 // Add this new function for discretizing the actual value
 const discretizeValue = (evidenceType, actualValue) => {
+  if (typeof actualValue == "string") {
+    const numberPattern = /\d+/g; 
+    const arrOfNumbers = actualValue.match(numberPattern);
+    actualValue = parseFloat(arrOfNumbers.join("."));
+  }
+  console.log(actualValue)
   switch (evidenceType) {
     case 'temperature':
       return discretizeTemperature(actualValue);
@@ -202,16 +209,16 @@ async function addSuggestionsToDatabase() {
 
 
     const evidence = {
-      temperature: discretizeTemperature(parseFloat(currentTemperatureValue)),
-      humidity: discretizeHumidity(parseFloat(currentHumidityValue)),
-      distance_from_house: discretizeDistance(parseFloat(currentDistanceValue)),
-      season: convertSeasonToNumber(season),
-      hour: discretizeHour(hour)
+      temperature: 2,
+      humidity: 4,
+      distance_from_house: 3,
+      season: 2,
+      hour: 3
     };
 
     // Call the recommend_device function with the evidence
     const response = await axios.post(
-      "http://localhost:5000/recommend_device",
+      "http://127.0.0.1:5000/recommend_device",
       {
         devices: devices,
         evidence: evidence,
@@ -219,6 +226,7 @@ async function addSuggestionsToDatabase() {
     );
 
     const recommendedDevices = response.data;
+    console.log(recommendedDevices);
     // Add the suggestions to the MongoDB database
     for (const recommendedDevice of recommendedDevices) {
       if (recommendedDevice.recommendation === "on") {
