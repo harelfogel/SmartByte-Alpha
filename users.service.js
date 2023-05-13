@@ -37,6 +37,7 @@ const registerUser = async (fullName, email, password, role) => {
   return { status: 201, message: 'User created successfully' };
 };
 
+
 module.exports = {
   signInUser,
   registerUser,
