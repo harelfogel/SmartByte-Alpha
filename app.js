@@ -133,7 +133,7 @@ server.post("/notifyadmin", async (req, res) => {
 // --------------------------------- user roles ---------------------------------
 
 // server-side code (Node.js)
-server.get('/api/user-role', (req, res) => {
+server.get('/user-role', (req, res) => {
   res.json({ role: 'admin' }); // Replace 'admin' with the actual role based on your authentication logic
 });
 
