@@ -31,6 +31,7 @@ const {
   getAllRules,
   updateRule,
   deleteRuleById,
+  checkIfRuleIsAlreadyExists,
 } = require("./rules.service.js");
 const { switchHeaterState } = require("./heaterController.js");
 
@@ -516,7 +517,7 @@ server.get("/rooms/:id", async (req, res) => {
   }
 });
 
-
+checkIfRuleIsAlreadyExists('IF distance>12 THEN TURN("ac on 256")')
 
 // Schedule the job to run at specific hours
 //schedule.scheduleJob("0 8,12,14,18,20 * * *", addSuggestionsToDatabase);
