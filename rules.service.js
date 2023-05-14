@@ -37,7 +37,7 @@ const validateRule = (rule) => {
   if (
     sensor !== "Temperature" &&
     sensor !== "distance" &&
-    sensor !== "Humidity" && 
+    sensor !== "Humidity" &&
     sensor !== "hour"
   ) {
     return {
@@ -53,12 +53,18 @@ const validateRule = (rule) => {
   };
 };
 
+const checkIfRuleIsAlreadyExists = async (rule) => {
+  const existingRule = await Rule.findOne({ rule: rule });
+  if (existingRule) return true;
+  return false;
+};
+
 // IF Temperature<10 THEN TURN("ac on 22")
 
-const insertRuleToDB = async (rule,isStrict) => {
+const insertRuleToDB = async (rule, isStrict) => {
   try {
     const ruleValidation = validateRule(rule);
-    console.log({ruleValidation})
+    console.log({ ruleValidation });
     if (ruleValidation.statusCode === 400) {
       return {
         statusCode: ruleValidation.statusCode,
@@ -66,8 +72,10 @@ const insertRuleToDB = async (rule,isStrict) => {
       };
     }
 
-    console.log({isStrict});
-    const newRule = new Rule({ rule,isStrict });
+    if(checkIfRuleIsAlreadyExists(rule)){
+      return { statusCode: 200, message: "rule is already exists" };
+    }
+    const newRule = new Rule({ rule, isStrict });
     newRule.id = Math.floor(10000000 + Math.random() * 90000000);
     await newRule.save();
 
@@ -141,18 +149,17 @@ const getAllRules = async () => {
 };
 
 const updateRule = async (ruleId, updateFields) => {
-    
-    try {
-      const rule = updateFields?.rule || "";
-      if (rule !== "") {
-        const ruleValidation = validateRule(rule);
-        if (ruleValidation.statusCode === 400) {
-          return {
-            statusCode: ruleValidation.statusCode,
-            message: ruleValidation.message,
-          };
-        }
+  try {
+    const rule = updateFields?.rule || "";
+    if (rule !== "") {
+      const ruleValidation = validateRule(rule);
+      if (ruleValidation.statusCode === 400) {
+        return {
+          statusCode: ruleValidation.statusCode,
+          message: ruleValidation.message,
+        };
       }
+    }
     await Rule.updateOne({ id: ruleId }, { $set: updateFields });
     return {
       statusCode: 200,
@@ -187,4 +194,5 @@ module.exports = {
   updateRule,
   removeRuleFromDB,
   deleteRuleById,
+  checkIfRuleIsAlreadyExists,
 };
