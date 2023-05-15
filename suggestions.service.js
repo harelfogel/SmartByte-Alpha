@@ -27,6 +27,35 @@ const temperatureMap = {
 //     })
 //     .join(" AND ");
 //   }
+
+const getComparisonOperator = (evidence, evidenceValues) => {
+  const stats = calculateStats(evidenceValues);
+  const comparisonOperators = ["<", ">", "<=", ">="];
+
+  // Calculate quartiles
+  const sortedValues = evidenceValues.slice().sort((a, b) => a - b);
+  const lowerQuartile = sortedValues[Math.floor(sortedValues.length * 0.25)];
+  const upperQuartile = sortedValues[Math.floor(sortedValues.length * 0.75)];
+
+  // Determine which comparison operator to use based on the median
+  let chosenOperator;
+  if (evidence === 'season' || evidence === 'hour') {
+    if (stats.median === stats.mode) {
+      chosenOperator = "==";
+    } else {
+      chosenOperator = "!=";
+    }
+  } else {
+    if (stats.median < lowerQuartile + (upperQuartile - lowerQuartile) * 0.25) {
+      chosenOperator = Math.random() < 0.5 ? ">" : ">=";
+    } else if (stats.median > lowerQuartile + (upperQuartile - lowerQuartile) * 0.75) {
+      chosenOperator = Math.random() < 0.5 ? "<" : "<=";
+    } else {
+      chosenOperator = Math.random() < 0.5 ? "<=" : ">=";
+    }
+  }
+  return chosenOperator;
+};
 const calculateStats = (evidenceValues) => {
   const n = evidenceValues.length;
   const mean = evidenceValues.reduce((sum, value) => sum + value, 0) / n;
@@ -81,7 +110,6 @@ const generateRule = async (suggestion) => {
   console.log('im in gnereate rule')
   const { device, strongest_evidence, state, average_duration } = suggestion;
   // Get strongest evidence
-  console.log({ average_duration });
   const strongestEvidence = getStrongestEvidence(strongest_evidence);
   const mappedValue = mapEvidenceValue(strongestEvidence.evidence);
   const actualValue = await getActualEvidenceValue(strongestEvidence);
@@ -166,6 +194,7 @@ async function addSuggestionsToDatabase() {
     const currentHumidity = latestSensorValues.humidity;
     const currentDistance = latestSensorValues.distance;
 
+    console.log('line')
     const devices = [
       "lights",
       "fan",
@@ -187,7 +216,6 @@ async function addSuggestionsToDatabase() {
       season: convertSeasonToNumber(season),
       hour: discretizeHour(hour)
     };
-
 
     // Call the recommend_device function with the evidence
     const response = await axios.post(
@@ -222,9 +250,9 @@ async function addSuggestionsToDatabase() {
           state: "on",
         };
 
+        console.log({ suggestionData });
         const rule = await generateRule(suggestionData);
 
-        console.log({ rule });
         // Check if a suggestion with the same rule already exists in the database
         const existingSuggestion = await Suggestion.findOne({ rule: rule });
 
