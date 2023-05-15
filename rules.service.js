@@ -40,7 +40,7 @@ const validateRule = (rule) => {
     return {
       statusCode: 400,
       message:
-        "Rule must contain one of theses parameters: temperature, distance, humidity,hour or season",
+        "Rule must contain one of theses parameters: temperature, distance, humidity,hour or season.",
     };
   }
 
