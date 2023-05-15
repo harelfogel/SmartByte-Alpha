@@ -48,6 +48,8 @@ const validateRule = (rule) => {
   }
   const sensor = parsedRule[1].split(operator)[0];
 
+
+
   if (!/^(temperature|distance|humidity|hour|season)$/i.test(sensor)) {
     return {
       statusCode: 400,
