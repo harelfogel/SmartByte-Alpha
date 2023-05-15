@@ -1,6 +1,6 @@
 require("dotenv").config();
 const getClientDetails = require("./smartThings.js");
-const { getLaundryDetails } = require('./smartthings');
+const { getLaundryDetails } = require('./smartThings');
 const express = require("express");
 const connectDB = require("./config");
 const {
@@ -54,21 +54,15 @@ const { signInUser, registerUser } = require("./users.service");
 const jwt = require("jsonwebtoken");
 const axios = require("axios");
 const schedule = require("node-schedule");
-const { toggleLaundry } = require("./smartthings");
-
-
-const {connectToWs} = require("./ws.js");
-
+const { toggleLaundry } = require("./smartThings");
+const { connectToWs } = require("./ws.js");
 const { getLatestSensorValues } = require("./sensorValues.service.js");
 const { response } = require("express");
 const Device = require("./Device.js");
 const { getRooms, getRoomById } = require("./rooms.service.js");
 const _ = require('lodash');
-
 const { sendEmail } = require("./nodeMailer.js");
-
 require("dotenv").config();
-
 const server = express();
 const port = process.env.PORT || 3001;
 server.use(express.json());
@@ -78,7 +72,6 @@ server.use(cors({ origin: true }));
 connectDB();
 
 connectToWs();
-
 
 
 //Handle get requests
@@ -159,9 +152,8 @@ server.get("/rules", async (req, res) => {
 
 // Define the route for adding a new rule
 server.post("/rules", async (req, res) => {
-  console.log("add rule");
   const { rule, isStrict = false } = req.body;
-  console.log({rule, isStrict});
+  console.log({ rule, isStrict });
   const response = await insertRuleToDB(rule, isStrict);
   console.log("response", response.message)
   res.status(response.statusCode).send(response.message);
@@ -169,7 +161,7 @@ server.post("/rules", async (req, res) => {
 
 server.post("/rules/:id", async (req, res) => {
   // const { isActive } = req.body;
-  const updateFields = {...req.body};
+  const updateFields = { ...req.body };
   const id = req.params.id;
   const response = await updateRule(id, updateFields);
   return res.status(response.statusCode).send(response.message);
@@ -194,19 +186,19 @@ server.delete("/rules/:id", async (req, res) => {
 // --------------------------------- SmartThings- Laundry ---------------------------------
 
 //Handle get requests
-server.get("/smartthings", async (req, res) =>{
-  const response= await smartThingsGetDevices();
+server.get("/smartthings", async (req, res) => {
+  const response = await smartThingsGetDevices();
   res.json({ message: `Welcome to smartthings details` });
 });
 
 server.get('/laundry/details/', async (req, res) => {
   try {
-      console.log("Yovel laundry")
-      const details = await getLaundryDetails();
-      res.json(details);
+    console.log("Yovel laundry")
+    const details = await getLaundryDetails();
+    res.json(details);
   } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: 'Failed to get laundry details' });
+    console.error(error);
+    res.status(500).json({ error: 'Failed to get laundry details' });
   }
 });
 
@@ -233,7 +225,7 @@ server.get('/laundry/details', async (req, res) => {
 
 server.post("/laundry/update", async (req, res) => {
   const { deviceId, temperature, rinse, spin } = req.body;
-  
+
   try {
     const updatedDevice = await Device.findOneAndUpdate(
       { device_id: deviceId },
@@ -263,7 +255,7 @@ server.get("/homeConnect/callback", (req, res) => {
 
 server.post("/laundry/update", async (req, res) => {
   const { deviceId, temperature, rinse, spin } = req.body;
-  
+
   try {
     const updatedDevice = await Device.findOneAndUpdate(
       { device_id: deviceId },
@@ -285,7 +277,7 @@ server.post("/laundry/update", async (req, res) => {
 server.post("/sensibo", async (req, res) => {
   try {
     console.log("-----------sensibo---------------");
-    
+
     const state = req.body.state;
     const temperature = req.body.temperature || null;
     await switchAcState(state, temperature);
@@ -313,7 +305,7 @@ server.get("/temperature", async (req, res) => {
 //   } catch (err) {
 //     return res.status(400).json({ message: err.message });
 //   }
-  
+
 // });
 
 
@@ -481,7 +473,7 @@ server.post("/suggestions", async (req, res) => {
   try {
     const response = await addSuggestionMenually(req.body);
     return res.status(200).send(response.data);
-  } catch (err) {}
+  } catch (err) { }
 });
 
 server.delete("/suggestions/:id", async (req, res) => {
@@ -489,7 +481,7 @@ server.delete("/suggestions/:id", async (req, res) => {
   try {
     const response = await deleteSuggestion(id);
     return res.status(200).send(response.data);
-  }catch(err) {
+  } catch (err) {
     return res.status(400).send({ message: err.message });
   }
 })
@@ -517,12 +509,13 @@ server.get("/rooms/:id", async (req, res) => {
   }
 });
 
-checkIfRuleIsAlreadyExists('IF distance>12 THEN TURN("ac on 256")')
+
+addSuggestionsToDatabase();
 
 // Schedule the job to run at specific hours
 //schedule.scheduleJob("0 8,12,14,18,20 * * *", addSuggestionsToDatabase);
 //schedule.scheduleJob("0 * * * * *", addSuggestionsToDatabase);
-addSuggestionsToDatabase();
+
 // --------------------------------- Running the ML script ---------------------------------
 
 // const BAYESIAN_SCRIPT_INTERVAL = 600000; // 10 minutes in milliseconds

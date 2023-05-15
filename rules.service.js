@@ -23,10 +23,10 @@ const validateRule = (rule) => {
   const operator = /\b(<)\b/i.test(rule)
     ? "<"
     : /\b(>)\b/i.test(rule)
-    ? ">"
-    : /\b(=)\b/i.test(rule)
-    ? "="
-    : null;
+      ? ">"
+      : /\b(=)\b/i.test(rule)
+        ? "="
+        : null;
   // if (!operator) {
   //     return {
   //         statusCode: 400,
@@ -34,16 +34,12 @@ const validateRule = (rule) => {
   //     }
   // }
   const sensor = parsedRule[1].split(operator)[0];
-  if (
-    sensor !== "Temperature" &&
-    sensor !== "distance" &&
-    sensor !== "Humidity" &&
-    sensor !== "hour"
-  ) {
+
+  if (!/^(temperature|distance|humidity|hour|season)$/.test(sensor)) {
     return {
       statusCode: 400,
       message:
-        "Rule must contain one of theses sensors: Temperature, distance, Humidity",
+        "Rule must contain one of theses parameters: temperature, distance, humidity,hour or season",
     };
   }
 
@@ -64,17 +60,16 @@ const checkIfRuleIsAlreadyExists = async (rule) => {
 const insertRuleToDB = async (rule, isStrict) => {
   try {
     const ruleValidation = validateRule(rule);
-    console.log({ ruleValidation });
     if (ruleValidation.statusCode === 400) {
       return {
         statusCode: ruleValidation.statusCode,
         message: ruleValidation.message,
       };
     }
-
     if(checkIfRuleIsAlreadyExists(rule)){
       return { statusCode: 200, message: "rule is already exists" };
     }
+
     const newRule = new Rule({ rule, isStrict });
     newRule.id = Math.floor(10000000 + Math.random() * 90000000);
     await newRule.save();
