@@ -47,9 +47,10 @@ const validateRule = (rule) => {
     }
   }
   const sensor = parsedRule[1].split(operator)[0];
-  let regex = /^IF ((temperature|distance|humidity|hour|season) (==|!=|<=|>=|>|<) [\d\w\s]* (AND|OR) )?(temperature|distance|humidity|hour|season) (==|!=|<=|>=|>|<) [\d\w\s] THEN TURN\(".*"\)$/;
 
-  if (!regex.test(sensor)) {
+
+
+  if (!/^(temperature|distance|humidity|hour|season)$/i.test(sensor)) {
     return {
       statusCode: 400,
       message:
