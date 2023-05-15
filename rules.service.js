@@ -75,8 +75,8 @@ const insertRuleToDB = async (rule, isStrict) => {
         rule = rule.replace('spring', '2');
       } else if (rule.includes('summer')) {
         rule = rule.replace('summer', '3');
-      } else if (rule.includes('autumn')) {
-        rule = rule.replace('autumn', '4');
+      } else if (rule.includes('fall')) {
+        rule = rule.replace('fall', '4');
       } else {
         console.log('No specific condition matched.');
       }
