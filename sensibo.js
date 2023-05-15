@@ -134,7 +134,27 @@ const parseSensorAndWriteToMongo = async () => {
       sensor_type: "humidity",
     });
 
-    await Promise.all([temperatureDocument.save(), humidityDocument.save()]);
+    const currentDate = new Date();
+    const currentMonth = currentDate.getMonth() + 1; // January is month 0, so we add 1 to get the correct month number
+    let season = '';
+    if (currentMonth >= 3 && currentMonth <= 5) {
+      season = 2; // Spring
+    } else if (currentMonth >= 6 && currentMonth <= 8) {
+      season = 2; // Summer
+    } else if (currentMonth >= 9 && currentMonth <= 11) {
+      season = 4; // Autumn
+    } else {
+      season = 1; // Winter
+    }
+
+    const seasonValue = `VAR season=${season}`;
+    const seasonDocument = new SensorValue({
+      value: seasonValue,
+      sensor_type: "season",
+    });
+
+
+    await Promise.all([temperatureDocument.save(), humidityDocument.save(), seasonDocument.save()]);
 
     // console.log(`Temperature: ${temperature} Humidity: ${humidity} saved to database.`);
   } catch (error) {
