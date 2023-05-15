@@ -33,9 +33,23 @@ const validateRule = (rule) => {
   //         message: 'Rule must contain one of theses operators: <, >, ='
   //     }
   // }
+  if (rule.includes('season')) {
+    if (rule.includes('winter')) {
+      rule = rule.replace('winter', '1');
+    } else if (rule.includes('spring')) {
+      rule = rule.replace('spring', '2');
+    } else if (rule.includes('summer')) {
+      rule = rule.replace('summer', '3');
+    } else if (rule.includes('autumn')) {
+      rule = rule.replace('autumn', '4');
+    } else {
+      console.log('No specific condition matched.');
+    }
+  }
   const sensor = parsedRule[1].split(operator)[0];
+  let regex = /^IF ((temperature|distance|humidity|hour|season) (==|!=|<=|>=|>|<) [\d\w\s]* (AND|OR) )?(temperature|distance|humidity|hour|season) (==|!=|<=|>=|>|<) [\d\w\s] THEN TURN\(".*"\)$/;
 
-  if (!/^(temperature|distance|humidity|hour|season)$/.test(sensor)) {
+  if (!regex.test(sensor)) {
     return {
       statusCode: 400,
       message:
