@@ -239,7 +239,6 @@ async function addSuggestionsToDatabase() {
           }
         }
         const roundedValue = Math.floor(recommendedDevice.average_duration);
-        console.log(roundedValue)
         const suggestionData = {
           device: deviceName,
           average_duration: roundedValue,
