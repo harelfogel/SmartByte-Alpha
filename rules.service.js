@@ -23,10 +23,10 @@ const validateRule = (rule) => {
   const operator = /\b(<)\b/i.test(rule)
     ? "<"
     : /\b(>)\b/i.test(rule)
-    ? ">"
-    : /\b(=)\b/i.test(rule)
-    ? "="
-    : null;
+      ? ">"
+      : /\b(=)\b/i.test(rule)
+        ? "="
+        : null;
   // if (!operator) {
   //     return {
   //         statusCode: 400,
@@ -34,16 +34,13 @@ const validateRule = (rule) => {
   //     }
   // }
   const sensor = parsedRule[1].split(operator)[0];
-  if (
-    sensor !== "Temperature" &&
-    sensor !== "distance" &&
-    sensor !== "Humidity" && 
-    sensor !== "hour"
-  ) {
+  console.log(sensor);
+
+  if (!/^(temperature|distance|humidity|hour|season)$/.test(sensor)) {
     return {
       statusCode: 400,
       message:
-        "Rule must contain one of theses sensors: Temperature, distance, Humidity",
+        "Rule must contain one of theses parameters: temperature, distance, humidity,hour or season",
     };
   }
 
@@ -55,10 +52,10 @@ const validateRule = (rule) => {
 
 // IF Temperature<10 THEN TURN("ac on 22")
 
-const insertRuleToDB = async (rule,isStrict) => {
+const insertRuleToDB = async (rule, isStrict) => {
   try {
     const ruleValidation = validateRule(rule);
-    console.log({ruleValidation})
+    console.log({ ruleValidation })
     if (ruleValidation.statusCode === 400) {
       return {
         statusCode: ruleValidation.statusCode,
@@ -66,8 +63,8 @@ const insertRuleToDB = async (rule,isStrict) => {
       };
     }
 
-    console.log({isStrict});
-    const newRule = new Rule({ rule,isStrict });
+    console.log({ isStrict });
+    const newRule = new Rule({ rule, isStrict });
     newRule.id = Math.floor(10000000 + Math.random() * 90000000);
     await newRule.save();
 
@@ -141,18 +138,18 @@ const getAllRules = async () => {
 };
 
 const updateRule = async (ruleId, updateFields) => {
-    
-    try {
-      const rule = updateFields?.rule || "";
-      if (rule !== "") {
-        const ruleValidation = validateRule(rule);
-        if (ruleValidation.statusCode === 400) {
-          return {
-            statusCode: ruleValidation.statusCode,
-            message: ruleValidation.message,
-          };
-        }
+
+  try {
+    const rule = updateFields?.rule || "";
+    if (rule !== "") {
+      const ruleValidation = validateRule(rule);
+      if (ruleValidation.statusCode === 400) {
+        return {
+          statusCode: ruleValidation.statusCode,
+          message: ruleValidation.message,
+        };
       }
+    }
     await Rule.updateOne({ id: ruleId }, { $set: updateFields });
     return {
       statusCode: 200,

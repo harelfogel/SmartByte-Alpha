@@ -76,40 +76,12 @@ const getStrongestEvidence = (evidence) => {
   return strongestEvidence;
 };
 
-const getComparisonOperator = (evidence, evidenceValues) => {
-  const stats = calculateStats(evidenceValues);
-  const comparisonOperators = ["<", ">", "<=", ">="];
-
-  // Calculate quartiles
-  const sortedValues = evidenceValues.slice().sort((a, b) => a - b);
-  const lowerQuartile = sortedValues[Math.floor(sortedValues.length * 0.25)];
-  const upperQuartile = sortedValues[Math.floor(sortedValues.length * 0.75)];
-
-  // Determine which comparison operator to use based on the median
-  let chosenOperator;
-  if (evidence === 'season' || evidence === 'hour') {
-    if (stats.median === stats.mode) {
-      chosenOperator = "==";
-    } else {
-      chosenOperator = "!=";
-    }
-  } else {
-    if (stats.median < lowerQuartile + (upperQuartile - lowerQuartile) * 0.25) {
-      chosenOperator = Math.random() < 0.5 ? ">" : ">=";
-    } else if (stats.median > lowerQuartile + (upperQuartile - lowerQuartile) * 0.75) {
-      chosenOperator = Math.random() < 0.5 ? "<" : "<=";
-    } else {
-      chosenOperator = Math.random() < 0.5 ? "<=" : ">=";
-    }
-  }
-  return chosenOperator;
-};
-
 
 const generateRule = async (suggestion) => {
-  const { device, strongest_evidence, state } = suggestion;
+  console.log('im in gnereate rule')
+  const { device, strongest_evidence, state, average_duration } = suggestion;
   // Get strongest evidence
-
+  console.log({ average_duration });
   const strongestEvidence = getStrongestEvidence(strongest_evidence);
   const mappedValue = mapEvidenceValue(strongestEvidence.evidence);
   const actualValue = await getActualEvidenceValue(strongestEvidence);
@@ -127,14 +99,14 @@ const generateRule = async (suggestion) => {
   const conditions = `${strongestEvidence.evidence} ${comparisonOperators} ${value}`;
   const action = `("${device.split('_')[0]} ${state}")`;
 
-  const generatedRule = `IF ${conditions} THEN TURN${action}`;
+  const generatedRule = `IF ${conditions} THEN TURN${action} ON FOR ${average_duration} minutes`;
   return generatedRule;
 };
 
 // Add this new function for discretizing the actual value
 const discretizeValue = (evidenceType, actualValue) => {
   if (typeof actualValue == "string" && /\d/.test(actualValue)) {
-    const numberPattern = /\d+/g; 
+    const numberPattern = /\d+/g;
     const arrOfNumbers = actualValue.match(numberPattern);
     actualValue = parseFloat(arrOfNumbers.join("."));
   }
@@ -187,6 +159,7 @@ const getSuggestions = async () => {
 
 async function addSuggestionsToDatabase() {
   try {
+    console.log('im in suggested rule!!');
     const latestSensorValues = await getLatestSensorValues();
     const { season, hour } = getCurrentSeasonAndHour();
     const currentTemperature = latestSensorValues.temperature;
@@ -215,6 +188,7 @@ async function addSuggestionsToDatabase() {
       hour: discretizeHour(hour)
     };
 
+
     // Call the recommend_device function with the evidence
     const response = await axios.post(
       "http://127.0.0.1:5000/recommend_device",
@@ -230,7 +204,7 @@ async function addSuggestionsToDatabase() {
     for (const recommendedDevice of recommendedDevices) {
       if (recommendedDevice.recommendation === "on") {
         const deviceName = recommendedDevice.variables[0]; // Extract the device name from the variables array
-        for (const findStrongEvidence of recommendedDevice.strongest_evidence){
+        for (const findStrongEvidence of recommendedDevice.strongest_evidence) {
           if (findStrongEvidence.evidence !== "season") {
             strongestEvidence = findStrongEvidence;
             break;
@@ -238,6 +212,7 @@ async function addSuggestionsToDatabase() {
         }
         const suggestionData = {
           device: deviceName,
+          average_duration: recommendedDevice.average_duration,
           strongest_evidence: [
             {
               evidence: strongestEvidence.evidence,
@@ -246,8 +221,10 @@ async function addSuggestionsToDatabase() {
           ],
           state: "on",
         };
+
         const rule = await generateRule(suggestionData);
 
+        console.log({ rule });
         // Check if a suggestion with the same rule already exists in the database
         const existingSuggestion = await Suggestion.findOne({ rule: rule });
 
