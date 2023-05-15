@@ -33,22 +33,7 @@ const validateRule = (rule) => {
   //         message: 'Rule must contain one of theses operators: <, >, ='
   //     }
   // }
-  if (rule.includes('season')) {
-    if (rule.includes('winter')) {
-      rule = rule.replace('winter', '1');
-    } else if (rule.includes('spring')) {
-      rule = rule.replace('spring', '2');
-    } else if (rule.includes('summer')) {
-      rule = rule.replace('summer', '3');
-    } else if (rule.includes('autumn')) {
-      rule = rule.replace('autumn', '4');
-    } else {
-      console.log('No specific condition matched.');
-    }
-  }
   const sensor = parsedRule[1].split(operator)[0];
-
-
 
   if (!/^(temperature|distance|humidity|hour|season)$/i.test(sensor)) {
     return {
@@ -65,11 +50,9 @@ const validateRule = (rule) => {
     };
   }
 
-
-
   return {
     statusCode: 200,
-    message: "Rule validated successfully",
+    message: "Rule  validated successfully",
   };
 };
 
@@ -85,7 +68,19 @@ const insertRuleToDB = async (rule, isStrict) => {
         message: ruleValidation.message,
       };
     }
-
+    if (rule.includes('season')) {
+      if (rule.includes('winter')) {
+        rule = rule.replace('winter', '1');
+      } else if (rule.includes('spring')) {
+        rule = rule.replace('spring', '2');
+      } else if (rule.includes('summer')) {
+        rule = rule.replace('summer', '3');
+      } else if (rule.includes('autumn')) {
+        rule = rule.replace('autumn', '4');
+      } else {
+        console.log('No specific condition matched.');
+      }
+    }
     console.log({ isStrict });
     const newRule = new Rule({ rule, isStrict });
     newRule.id = Math.floor(10000000 + Math.random() * 90000000);

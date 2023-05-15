@@ -125,13 +125,12 @@ const generateRule = async (suggestion) => {
   const discretizedActualValue = discretizeValue(strongestEvidence.evidence, actualValue[0]); // <-- Added this line
   const value = mappedValue[discretizedActualValue.toString()];
   const conditions = `${strongestEvidence.evidence} ${comparisonOperators} ${value}`;
-  const action = `("${device.split('_')[0]} ${state}")`;
-
-  const generatedRule = `IF ${conditions} THEN TURN${action} ON FOR ${average_duration} minutes`;
+  const action = `("${device.split('_')[0]} ${state} for ${average_duration} minutes")`;
+  const generatedRule = `IF ${conditions} THEN TURN${action}`;
   return generatedRule;
 };
 
-// Add this new function for discretizing the actual value
+// Add this new function for discrretizing the actual value
 const discretizeValue = (evidenceType, actualValue) => {
   if (typeof actualValue == "string" && /\d/.test(actualValue)) {
     const numberPattern = /\d+/g;
@@ -233,10 +232,8 @@ async function addSuggestionsToDatabase() {
       if (recommendedDevice.recommendation === "on") {
         const deviceName = recommendedDevice.variables[0]; // Extract the device name from the variables array
         for (const findStrongEvidence of recommendedDevice.strongest_evidence) {
-          if (findStrongEvidence.evidence !== "season") {
             strongestEvidence = findStrongEvidence;
             break;
-          }
         }
         const roundedValue = Math.floor(recommendedDevice.average_duration);
         const suggestionData = {
