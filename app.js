@@ -31,6 +31,7 @@ const {
   getAllRules,
   updateRule,
   deleteRuleById,
+  checkIfRuleIsAlreadyExists,
 } = require("./rules.service.js");
 const { switchHeaterState } = require("./heaterController.js");
 
@@ -510,6 +511,7 @@ server.get("/rooms/:id", async (req, res) => {
 
 
 addSuggestionsToDatabase();
+
 // Schedule the job to run at specific hours
 //schedule.scheduleJob("0 8,12,14,18,20 * * *", addSuggestionsToDatabase);
 //schedule.scheduleJob("0 * * * * *", addSuggestionsToDatabase);

@@ -34,15 +34,23 @@ const validateRule = (rule) => {
   //     }
   // }
   const sensor = parsedRule[1].split(operator)[0];
-  let regex = /^IF ((temperature|distance|humidity|hour|season) (==|!=|<=|>=|>|<) [\d\w\s]* (AND|OR) )*?(temperature|distance|humidity|hour|season) (==|!=|<=|>=|>|<) [\d\w\s]* THEN TURN\(".*"\)$/;
 
-  if (!regex.test(sensor)) {
+  if (!/^(temperature|distance|humidity|hour|season)$/.test(sensor)) {
     return {
       statusCode: 400,
       message:
-        "Rule must contain one of theses parameters: temperature, distance, humidity,hour or season.",
+        "Rule must contain one of theses sensor's parameters: temperature, distance, humidity,hour or season",
     };
   }
+
+  if (!/THEN TURN\(".*"\)$/i.test(rule)) {
+    return {
+      statusCode: 400,
+      message: "Rule must contain 'THEN TURN(...)' after the condition",
+    };
+  }
+
+
 
   return {
     statusCode: 200,
