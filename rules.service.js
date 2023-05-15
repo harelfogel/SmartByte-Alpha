@@ -35,8 +35,6 @@ const validateRule = (rule) => {
   // }
   const sensor = parsedRule[1].split(operator)[0];
 
-  console.log(sensor);
-
   if (!/^(temperature|distance|humidity|hour|season)$/.test(sensor)) {
     return {
       statusCode: 400,
@@ -51,20 +49,27 @@ const validateRule = (rule) => {
   };
 };
 
+const checkIfRuleIsAlreadyExists = async (rule) => {
+  const existingRule = await Rule.findOne({ rule: rule });
+  if (existingRule) return true;
+  return false;
+};
+
 // IF Temperature<10 THEN TURN("ac on 22")
 
 const insertRuleToDB = async (rule, isStrict) => {
   try {
     const ruleValidation = validateRule(rule);
-    console.log({ ruleValidation })
     if (ruleValidation.statusCode === 400) {
       return {
         statusCode: ruleValidation.statusCode,
         message: ruleValidation.message,
       };
     }
+    if(checkIfRuleIsAlreadyExists(rule)){
+      return { statusCode: 200, message: "rule is already exists" };
+    }
 
-    console.log({ isStrict });
     const newRule = new Rule({ rule, isStrict });
     newRule.id = Math.floor(10000000 + Math.random() * 90000000);
     await newRule.save();
@@ -139,7 +144,6 @@ const getAllRules = async () => {
 };
 
 const updateRule = async (ruleId, updateFields) => {
-
   try {
     const rule = updateFields?.rule || "";
     if (rule !== "") {
@@ -185,4 +189,5 @@ module.exports = {
   updateRule,
   removeRuleFromDB,
   deleteRuleById,
+  checkIfRuleIsAlreadyExists,
 };
