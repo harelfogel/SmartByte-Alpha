@@ -34,6 +34,7 @@ const validateRule = (rule) => {
   //     }
   // }
   const sensor = parsedRule[1].split(operator)[0];
+
   console.log(sensor);
 
   if (!/^(temperature|distance|humidity|hour|season)$/.test(sensor)) {
