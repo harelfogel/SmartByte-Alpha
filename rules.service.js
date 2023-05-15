@@ -34,12 +34,13 @@ const validateRule = (rule) => {
   //     }
   // }
   const sensor = parsedRule[1].split(operator)[0];
+  let regex = /^IF ((temperature|distance|humidity|hour|season) (==|!=|<=|>=|>|<) [\d\w\s]* (AND|OR) )?(temperature|distance|humidity|hour|season) (==|!=|<=|>=|>|<) [\d\w\s] THEN TURN\(".*"\)$/;
 
-  if (!/^(temperature|distance|humidity|hour|season)$/.test(sensor)) {
+  if (!regex.test(sensor)) {
     return {
       statusCode: 400,
       message:
-        "Rule must contain one of theses parameters: temperature, distance, humidity,hour or season",
+        "Rule must contain one of theses parameters: temperature, distance, humidity,hour or season.",
     };
   }
 
