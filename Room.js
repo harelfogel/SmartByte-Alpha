@@ -17,6 +17,15 @@ const roomSchema = new mongoose.Schema({
     type: [String],
     default: [],
   },
+  sensors: {
+    type: Map,
+    of: String,
+    default: {},
+  },
+  motionDetected: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const Room = mongoose.model("rooms", roomSchema);

@@ -57,22 +57,31 @@ const schedule = require("node-schedule");
 const { toggleLaundry } = require("./smartThings");
 const { connectToWs } = require("./ws.js");
 const { getLatestSensorValues } = require("./sensorValues.service.js");
+const { detectMotion } = require("./motion.service.js");
 const { response } = require("express");
 const Device = require("./Device.js");
 const { getRooms, getRoomById } = require("./rooms.service.js");
 const _ = require('lodash');
 const { sendEmail } = require("./nodeMailer.js");
+const { getSensors } = require("./sensors.service.js");
 require("dotenv").config();
 const server = express();
 const port = process.env.PORT || 3001;
 server.use(express.json());
 server.use(cors({ origin: true }));
+const cron = require('node-cron');
+const { simulateMotionSensor } = require('./motion.service');
+
+
 
 // Connect to MongoDB
 connectDB();
 
 connectToWs();
 
+//simulateMotionSensor();
+// Simulate motion sensor every minute
+setInterval(simulateMotionSensor, 70 * 1000);  // 60 * 1000 milliseconds = 1 minute
 
 //Handle get requests
 server.get("/", function (req, res) {
@@ -140,6 +149,21 @@ server.post("/test", async (req, res) => {
     res.status(response.statusCode).json(response.data);
   } catch (err) {
     res.status(400).json(response.data);
+  }
+});
+
+// --------------------------------- Sensors ---------------------------------
+server.get("/sensors", async (req, res) => {
+  try {
+    const sensors = await getSensors();
+    if (sensors) {
+      res.json(sensors);
+    } else {
+      res.status(500).json({ message: "Could not retrieve sensors." });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error." });
   }
 });
 
@@ -508,7 +532,6 @@ server.get("/rooms/:id", async (req, res) => {
     return res.status(400).send({ message: err.message });
   }
 });
-
 
 addSuggestionsToDatabase();
 
