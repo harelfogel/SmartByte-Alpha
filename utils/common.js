@@ -1,25 +1,25 @@
 const { default: axios } = require("axios");
-const Function = require("./Function");
-const SensorValue = require("./SensorValue");
-const { switchAcState, analyzeFunc } = require("./sensibo");
+const Function = require("../models/Function");
+const SensorValue = require("../models/SensorValue");
+const { switchAcState, analyzeFunc } = require("../api/sensibo");
 
 
 const removeSensorValueByType = async (sensorType) => {
     try {
-        const response = await SensorValue.deleteMany({sensor_type: sensorType});
-    } catch(e) {
+        const response = await SensorValue.deleteMany({ sensor_type: sensorType });
+    } catch (e) {
         console.log(e)
     }
 }
 
-const getFunctionsFromDB =  async () => {
+const getFunctionsFromDB = async () => {
     try {
         const functions = await Function.find();
         const response = await Function.deleteMany({});
         functions.map(async (func) => {
             await activateDevices(func.function.toLowerCase())
         })
-    }catch(e){
+    } catch (e) {
         console.log(e);
     }
 }
@@ -39,7 +39,7 @@ const activateDevices = async (func) => {
 
         return response;
 
-    }catch(err){
+    } catch (err) {
         console.log(err + " activateDevices");
     }
 
@@ -57,15 +57,13 @@ const getHeaterState = async () => {
 const switchHeaterState = async (state) => {
     const SERVER_URL = 'https://tuyaapi.onrender.com'
     const currentState = getHeaterState();
-    if(currentState == state) return;
+    if (currentState == state) return;
     const response = await axios.post(`${SERVER_URL}/control`, {
         code: "switch_1",
         value: state
     })
-    
+
 }
-
-
 
 module.exports = {
     removeSensorValueByType,

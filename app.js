@@ -1,6 +1,6 @@
 require("dotenv").config();
-const getClientDetails = require("./smartThings.js");
-const { getLaundryDetails } = require('./smartThings');
+const getClientDetails = require("./api/smartThings.js");
+const { getLaundryDetails } = require('./api/smartThings.js');
 const express = require("express");
 const connectDB = require("./config");
 const {
@@ -12,28 +12,28 @@ const {
   updateAcMode,
   updateSensiboMode,
   analyzeFunc,
-} = require("./sensibo.js");
+} = require("./api/sensibo.js");
 const cors = require("cors");
-const { homeConnectAuth, homeConnectToken } = require("./homeConnect.js");
+const { homeConnectAuth, homeConnectToken } = require("./api/homeConnect.js");
 const {
   smartThingsGetDevices,
   switchWasherWater,
-} = require("./smartThings.js");
-const { checkforUserDistance } = require("./location.js");
+} = require("./api/smartThings.js");
+const { checkforUserDistance } = require("./api/location.js");
 const {
   removeSensorValueByType,
   getFunctionsFromDB,
   getHeaterState,
   activateDevices,
-} = require("./common.js");
+} = require("./utils/common.js");
 const {
   insertRuleToDB,
   getAllRules,
   updateRule,
   deleteRuleById,
   checkIfRuleIsAlreadyExists,
-} = require("./rules.service.js");
-const { switchHeaterState } = require("./heaterController.js");
+} = require("./services/rules.service.js");
+const { switchHeaterState } = require("./api/heaterController.js");
 
 const {
   getSuggestions,
@@ -42,35 +42,35 @@ const {
   addSuggestionMenually,
   deleteSuggestion,
   updateRulesForExistingSuggestions,
-} = require("./suggestions.service.js");
-const { getDevices, updateDeviceModeInDatabase } = require("./devices.service.js");
+} = require("./services/suggestions.service.js");
+const { getDevices, updateDeviceModeInDatabase } = require("./services/devices.service.js");
 const {
   callBayesianScript,
   runBayesianScript,
   addingDataToCsv,
-} = require("./machineLearning.js");
-const { getCurrentSeasonAndHour } = require("./time.service.js");
-const { signInUser, registerUser } = require("./users.service");
+} = require("./utils/machineLearning.js");
+const { getCurrentSeasonAndHour } = require("./services/time.service.js");
+const { signInUser, registerUser } = require("./services/users.service.js");
 const jwt = require("jsonwebtoken");
 const axios = require("axios");
 const schedule = require("node-schedule");
-const { toggleLaundry } = require("./smartThings");
+const { toggleLaundry } = require("./api/smartThings.js");
 const { connectToWs } = require("./ws.js");
-const { getLatestSensorValues } = require("./sensorValues.service.js");
-const { detectMotion } = require("./motion.service.js");
+const { getLatestSensorValues } = require("./services/sensorValues.service.js");
+const { detectMotion } = require("./services/motion.service.js");
 const { response } = require("express");
-const Device = require("./Device.js");
-const { getRooms, getRoomById } = require("./rooms.service.js");
+const Device = require("./models/Device.js");
+const { getRooms, getRoomById } = require("./services/rooms.service.js");
 const _ = require('lodash');
-const { sendEmail } = require("./nodeMailer.js");
-const { getSensors } = require("./sensors.service.js");
+const { sendEmail } = require("./utils/nodeMailer.js");
+const { getSensors } = require("./services/sensors.service.js");
 require("dotenv").config();
 const server = express();
 const port = process.env.PORT || 3001;
 server.use(express.json());
 server.use(cors({ origin: true }));
 const cron = require('node-cron');
-const { simulateMotionSensor } = require('./motion.service');
+const { simulateMotionSensor } = require('./services/motion.service.js');
 
 
 

@@ -1,7 +1,7 @@
 const { default: axios } = require("axios");
 require("dotenv").config();
 const _ = require("lodash");
-const { addingDataToCsv } = require("./machineLearning.js");
+const { addingDataToCsv } = require("../utils/machineLearning.js");
 const TOKEN = process.env.SMARTTHINGS_TOKEN;
 const URL = "https://api.smartthings.com/v1";
 

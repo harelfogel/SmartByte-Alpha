@@ -1,4 +1,4 @@
-const Sensor = require('./Sensor');
+const Sensor = require('../models/Sensor');
 
 const getSensors = async () => {
     try {

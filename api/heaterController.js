@@ -1,8 +1,6 @@
 const { default: axios } = require("axios");
-const Device = require("./Device");
-const { addingDataToCsv } = require("./machineLearning.js");
-
-
+const Device = require("../models/Device");
+const { addingDataToCsv } = require("../utils/machineLearning.js");
 
 const TUYA_URL = 'https://tuyaapi.onrender.com'
 
@@ -14,7 +12,7 @@ const switchHeaterState = async (value) => {
             code: "switch_1",
             value
         })
-        await Device.updateOne({ device_id: '061751378caab5219d31' }, { state: (value===1) ? 'on' : 'off' });
+        await Device.updateOne({ device_id: '061751378caab5219d31' }, { state: (value === 1) ? 'on' : 'off' });
         await addingDataToCsv()
         return response.data;
     } catch (err) {

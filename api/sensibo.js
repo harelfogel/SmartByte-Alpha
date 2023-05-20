@@ -1,8 +1,8 @@
 const { default: axios } = require("axios");
-const Device = require("./Device");
-const { updateDeviceModeInDatabase } = require("./devices.service");
-const { addingDataToCsv } = require("./machineLearning.js");
-const SensorValue = require("./SensorValue");
+const Device = require("../models/Device");
+const { updateDeviceModeInDatabase } = require("../services/devices.service");
+const { addingDataToCsv } = require("../utils/machineLearning.js");
+const SensorValue = require("../models/SensorValue");
 
 const test = 0;
 const analyzeFunc = async (func) => {
@@ -15,7 +15,7 @@ const analyzeFunc = async (func) => {
       durationString = func.split(" for ")[1];
       time = parseInt(durationString.substring(0, durationString.indexOf(" ")));
       units = durationString.split(" ")[1];
-      if(units !== "minutes" && units !== "hours"){
+      if (units !== "minutes" && units !== "hours") {
         throw new Error("Units has to be minutes or hours");
       }
       durationInMiliSeconds =
@@ -47,9 +47,9 @@ const analyzeFunc = async (func) => {
     } else {
       response = await switchAcState(boolState);
     }
-    if(isWithDuration){
+    if (isWithDuration) {
       //turn ac off after a duration
-      setTimeout( async () => {
+      setTimeout(async () => {
         response = await switchAcState(false);
       }, durationInMiliSeconds)
     }
@@ -195,9 +195,9 @@ const updateSensiboMode = async (deviceId, mode) => {
         mode,
       },
     });
-    const updateDB=await updateDeviceModeInDatabase(deviceId,mode);
-    
-    if((response.status==200) && updateDB){
+    const updateDB = await updateDeviceModeInDatabase(deviceId, mode);
+
+    if ((response.status == 200) && updateDB) {
       await addingDataToCsv()
       return { success: true, data: response.data };
     }

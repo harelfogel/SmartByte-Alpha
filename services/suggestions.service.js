@@ -1,4 +1,4 @@
-const Suggestion = require("./Suggestion");
+const Suggestion = require("../models/Suggestion");
 const axios = require("axios");
 const { getLatestSensorValues } = require("./sensorValues.service");
 const { getCurrentSeasonAndHour } = require("./time.service");
@@ -8,8 +8,8 @@ const {
   discretizeHour,
   discretizeHumidity,
   discretizeTemperature,
-} = require("./utils");
-const { clients } = require("./ws");
+} = require("../utils/utils");
+const { clients } = require("../ws");
 
 const temperatureMap = {
   1: 15,
@@ -107,7 +107,6 @@ const getStrongestEvidence = (evidence) => {
 
 
 const generateRule = async (suggestion) => {
-  console.log('im in gnereate rule')
   const { device, strongest_evidence, state, average_duration } = suggestion;
   // Get strongest evidence
   const strongestEvidence = getStrongestEvidence(strongest_evidence);
@@ -186,14 +185,11 @@ const getSuggestions = async () => {
 
 async function addSuggestionsToDatabase() {
   try {
-    console.log('im in suggested rule!!');
     const latestSensorValues = await getLatestSensorValues();
     const { season, hour } = getCurrentSeasonAndHour();
     const currentTemperature = latestSensorValues.temperature;
     const currentHumidity = latestSensorValues.humidity;
     const currentDistance = latestSensorValues.distance;
-
-    console.log('line')
     const devices = [
       "lights",
       "fan",
@@ -232,8 +228,8 @@ async function addSuggestionsToDatabase() {
       if (recommendedDevice.recommendation === "on") {
         const deviceName = recommendedDevice.variables[0]; // Extract the device name from the variables array
         for (const findStrongEvidence of recommendedDevice.strongest_evidence) {
-            strongestEvidence = findStrongEvidence;
-            break;
+          strongestEvidence = findStrongEvidence;
+          break;
         }
         const roundedValue = Math.floor(recommendedDevice.average_duration);
         const suggestionData = {
@@ -247,8 +243,6 @@ async function addSuggestionsToDatabase() {
           ],
           state: "on",
         };
-
-        console.log({ suggestionData });
         const rule = await generateRule(suggestionData);
 
         // Check if a suggestion with the same rule already exists in the database

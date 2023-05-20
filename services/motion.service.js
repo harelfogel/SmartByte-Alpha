@@ -1,7 +1,7 @@
 const WebSocket = require('ws');
 const { getRooms } = require("./rooms.service");
-const Room = require('./Room');
-const { clients } = require('./ws.js');
+const Room = require('../models/Room');
+const { clients } = require('../ws.js');
 
 const simulateMotionSensor = async () => {
     try {
@@ -12,7 +12,6 @@ const simulateMotionSensor = async () => {
             const rooms = roomsResponse.data;
             // Select a random room
             const randomRoom = rooms[Math.floor(Math.random() * rooms.length)];
-            console.log({ randomRoom });
 
             // Update motionDetected of all rooms except the selected one
             await Room.updateMany({ _id: { $ne: randomRoom._id } }, { motionDetected: false });

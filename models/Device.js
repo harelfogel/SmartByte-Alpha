@@ -12,7 +12,7 @@ const deviceSchema = new mongoose.Schema({
     type: String,
     default: true
   },
-  threshold: {  
+  threshold: {
     type: Number,
     default: 0.6
   },
