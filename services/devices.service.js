@@ -1,4 +1,4 @@
-const Device = require("./Device")
+const Device = require("../models/Device")
 
 const getDevices = async () => {
   try {

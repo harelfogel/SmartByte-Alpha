@@ -1,13 +1,13 @@
 const { default: axios } = require("axios");
 const open = require('open');
 
-    const clientId = '54B2557BFC13E82EADBEA23FAD24291B8937E461D6839FF9B3C2817B6EB5E7DF';
-    const clientSecret = 'B10343C22D0393B25E6DBD26E776CE9CF151CFAEBB24E2F383A8AA70DEAEB392';
-    const redirectURI = 'http://localhost:8080/homeConnect/callback';
+const clientId = '54B2557BFC13E82EADBEA23FAD24291B8937E461D6839FF9B3C2817B6EB5E7DF';
+const clientSecret = 'B10343C22D0393B25E6DBD26E776CE9CF151CFAEBB24E2F383A8AA70DEAEB392';
+const redirectURI = 'http://localhost:8080/homeConnect/callback';
 
 
 
-const homeConnectAuth =  () => {
+const homeConnectAuth = () => {
     console.log("Home Connect");
 
     // const clientId = '54B2557BFC13E82EADBEA23FAD24291B8937E461D6839FF9B3C2817B6EB5E7DF';
@@ -21,7 +21,7 @@ const homeConnectAuth =  () => {
         redirect_uri: redirectURI,
         scope: scopes
     })
-    
+
 
     const authURL = `${authEndpoint}?${queryParams.toString()}`;
     // window.location.replace(authURL);
@@ -33,26 +33,26 @@ const homeConnectAuth =  () => {
 
 const homeConnectToken = async (req, res) => {
     // try {
-        console.log("Token", req.query)
-        const {code, state} = req.query;
-        // const clientId =        '54B2557BFC13E82EADBEA23FAD24291B8937E461D6839FF9B3C2817B6EB5E7DF';
-        // const clientSecret =    'B10343C22D0393B25E6DBD26E776CE9CF151CFAEBB24E2F383A8AA70DEAEB392';
-        // const redirectURI = 'http://localhost:8080/homeConnect/callback';
-        const authEndpoint = 'https://api.home-connect.com/security/oauth/token';
+    console.log("Token", req.query)
+    const { code, state } = req.query;
+    // const clientId =        '54B2557BFC13E82EADBEA23FAD24291B8937E461D6839FF9B3C2817B6EB5E7DF';
+    // const clientSecret =    'B10343C22D0393B25E6DBD26E776CE9CF151CFAEBB24E2F383A8AA70DEAEB392';
+    // const redirectURI = 'http://localhost:8080/homeConnect/callback';
+    const authEndpoint = 'https://api.home-connect.com/security/oauth/token';
 
-        const response = await axios.post('https://api.home-connect.com/security/oauth/token', {
-                grant_type: 'authorization_code',
-                code,
-                client_id: clientId,
-                client_secret: clientSecret,
-                // redirect_uri: redirectURI 
-            },
-            {
-            headers:{
+    const response = await axios.post('https://api.home-connect.com/security/oauth/token', {
+        grant_type: 'authorization_code',
+        code,
+        client_id: clientId,
+        client_secret: clientSecret,
+        // redirect_uri: redirectURI 
+    },
+        {
+            headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
             }
         })
-        console.log("response", response.data)
+    console.log("response", response.data)
     // }
     // catch(err) {
     //     console.log("ERR: Can't get token. " + err.message)

@@ -1,4 +1,4 @@
-const Rule = require("./Rule");
+const Rule = require("../models/Rule");
 const { ObjectId } = require("bson");
 const checkForDevices = (rule) => {
   const devices = [];
