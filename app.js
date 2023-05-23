@@ -1,6 +1,6 @@
 require("dotenv").config();
 const getClientDetails = require("./api/smartThings.js");
-const { getLaundryDetails } = require('./api/smartThings.js');
+const { getLaundryDetails } = require("./api/smartThings.js");
 const express = require("express");
 const connectDB = require("./config");
 const {
@@ -43,7 +43,14 @@ const {
   deleteSuggestion,
   updateRulesForExistingSuggestions,
 } = require("./services/suggestions.service.js");
-const { getDevices, updateDeviceModeInDatabase } = require("./services/devices.service.js");
+const {
+  getDevices,
+  updateDeviceModeInDatabase,
+  getDeviceByName,
+  addDeviceToRoom,
+  getDevicesByRoomId,
+  getRoomDevices
+} = require("./services/devices.service.js");
 const {
   callBayesianScript,
   runBayesianScript,
@@ -61,7 +68,7 @@ const { detectMotion } = require("./services/motion.service.js");
 const { response } = require("express");
 const Device = require("./models/Device.js");
 const { getRooms, getRoomById } = require("./services/rooms.service.js");
-const _ = require('lodash');
+const _ = require("lodash");
 const { sendEmail } = require("./utils/nodeMailer.js");
 const { getSensors } = require("./services/sensors.service.js");
 require("dotenv").config();
@@ -69,10 +76,8 @@ const server = express();
 const port = process.env.PORT || 3001;
 server.use(express.json());
 server.use(cors({ origin: true }));
-const cron = require('node-cron');
-const { simulateMotionSensor } = require('./services/motion.service.js');
-
-
+const cron = require("node-cron");
+const { simulateMotionSensor } = require("./services/motion.service.js");
 
 // Connect to MongoDB
 connectDB();
@@ -81,7 +86,7 @@ connectToWs();
 
 //simulateMotionSensor();
 // Simulate motion sensor every minute
-setInterval(simulateMotionSensor, 70 * 1000);  // 60 * 1000 milliseconds = 1 minute
+setInterval(simulateMotionSensor, 70 * 1000); // 60 * 1000 milliseconds = 1 minute
 
 //Handle get requests
 server.get("/", function (req, res) {
@@ -107,13 +112,11 @@ server.post("/login", async (req, res) => {
   const response = await signInUser(email, password);
 
   if (response.status === 200) {
-    res
-      .status(200)
-      .json({
-        message: response.message,
-        token: response.token,
-        user: response.user,
-      });
+    res.status(200).json({
+      message: response.message,
+      token: response.token,
+      user: response.user,
+    });
   } else {
     res.status(response.status).json({ message: response.message });
   }
@@ -123,7 +126,7 @@ server.post("/login", async (req, res) => {
 server.post("/notifyadmin", async (req, res) => {
   try {
     const { subject, text } = req.body;
-    console.log('notifyadmin email');
+    console.log("notifyadmin email");
     console.log(req.body);
     await sendEmail(subject, text);
     res.status(200).send({ message: "Email sent successfully" });
@@ -136,8 +139,8 @@ server.post("/notifyadmin", async (req, res) => {
 // --------------------------------- user roles ---------------------------------
 
 // server-side code (Node.js)
-server.get('/user-role', (req, res) => {
-  res.json({ role: 'admin' }); // Replace 'admin' with the actual role based on your authentication logic
+server.get("/user-role", (req, res) => {
+  res.json({ role: "admin" }); // Replace 'admin' with the actual role based on your authentication logic
 });
 
 // --------------------------------- test yovel ---------------------------------
@@ -167,7 +170,6 @@ server.get("/sensors", async (req, res) => {
   }
 });
 
-
 // --------------------------------- Rules ---------------------------------
 server.get("/rules", async (req, res) => {
   const response = await getAllRules();
@@ -179,7 +181,7 @@ server.post("/rules", async (req, res) => {
   const { rule, isStrict = false } = req.body;
   console.log({ rule, isStrict });
   const response = await insertRuleToDB(rule, isStrict);
-  console.log("response", response.message)
+  console.log("response", response.message);
   res.status(response.statusCode).send(response.message);
 });
 
@@ -215,14 +217,14 @@ server.get("/smartthings", async (req, res) => {
   res.json({ message: `Welcome to smartthings details` });
 });
 
-server.get('/laundry/details/', async (req, res) => {
+server.get("/laundry/details/", async (req, res) => {
   try {
-    console.log("Yovel laundry")
+    console.log("Yovel laundry");
     const details = await getLaundryDetails();
     res.json(details);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to get laundry details' });
+    res.status(500).json({ error: "Failed to get laundry details" });
   }
 });
 
@@ -231,19 +233,39 @@ server.post("/smartthings/toggle", function (req, res) {
   const deviceId = req.body.deviceId;
   toggleLaundry(newState, deviceId)
     .then(() => res.json({ statusCode: 200, message: "Toggled successfully" }))
-    .catch((err) => res.status(500).json({ statusCode: 500, message: "Failed to toggle", error: err.message }));
+    .catch((err) =>
+      res
+        .status(500)
+        .json({
+          statusCode: 500,
+          message: "Failed to toggle",
+          error: err.message,
+        })
+    );
 });
 
-server.get('/laundry/details', async (req, res) => {
+server.get("/laundry/details", async (req, res) => {
   try {
     const details = await getLaundryDetails();
     if (details) {
-      res.json({ statusCode: 200, message: 'Laundry details fetched successfully', details });
+      res.json({
+        statusCode: 200,
+        message: "Laundry details fetched successfully",
+        details,
+      });
     } else {
-      res.status(500).json({ statusCode: 500, message: 'Failed to fetch laundry details' });
+      res
+        .status(500)
+        .json({ statusCode: 500, message: "Failed to fetch laundry details" });
     }
   } catch (error) {
-    res.status(500).json({ statusCode: 500, message: 'Failed to fetch laundry details', error: error.message });
+    res
+      .status(500)
+      .json({
+        statusCode: 500,
+        message: "Failed to fetch laundry details",
+        error: error.message,
+      });
   }
 });
 
@@ -253,17 +275,28 @@ server.post("/laundry/update", async (req, res) => {
   try {
     const updatedDevice = await Device.findOneAndUpdate(
       { device_id: deviceId },
-      { "details.temperature": temperature, "details.rinse": rinse, "details.spin": spin },
+      {
+        "details.temperature": temperature,
+        "details.rinse": rinse,
+        "details.spin": spin,
+      },
       { new: true }
     );
-    res.json({ statusCode: 200, message: "Updated successfully", device: updatedDevice });
+    res.json({
+      statusCode: 200,
+      message: "Updated successfully",
+      device: updatedDevice,
+    });
   } catch (error) {
-    res.status(500).json({ statusCode: 500, message: "Failed to update", error: error.message });
+    res
+      .status(500)
+      .json({
+        statusCode: 500,
+        message: "Failed to update",
+        error: error.message,
+      });
   }
 });
-
-
-
 
 server.get("/homeConnect", (req, res) => {
   homeConnectAuth();
@@ -276,23 +309,36 @@ server.get("/homeConnect/callback", (req, res) => {
   res.json({ message: "token" });
 });
 
-
 server.post("/laundry/update", async (req, res) => {
   const { deviceId, temperature, rinse, spin } = req.body;
 
   try {
     const updatedDevice = await Device.findOneAndUpdate(
       { device_id: deviceId },
-      { "details.temperature": temperature, "details.rinse": rinse, "details.spin": spin },
+      {
+        "details.temperature": temperature,
+        "details.rinse": rinse,
+        "details.spin": spin,
+      },
       { new: true }
     );
 
     // Update the SmartThings API here
     await switchWasherWater(deviceId, true); // You may need to modify this call based on the changes you want to make to the SmartThings API
 
-    res.json({ statusCode: 200, message: "Updated successfully", device: updatedDevice });
+    res.json({
+      statusCode: 200,
+      message: "Updated successfully",
+      device: updatedDevice,
+    });
   } catch (error) {
-    res.status(500).json({ statusCode: 500, message: "Failed to update", error: error.message });
+    res
+      .status(500)
+      .json({
+        statusCode: 500,
+        message: "Failed to update",
+        error: error.message,
+      });
   }
 });
 
@@ -332,25 +378,23 @@ server.get("/temperature", async (req, res) => {
 
 // });
 
-
-server.post('/sensibo/mode', async (req, res) => {
+server.post("/sensibo/mode", async (req, res) => {
   const { deviceId, mode } = req.body;
   const result = await updateSensiboMode(deviceId, mode);
 
-  if (_.get(result, 'success', false)) {
+  if (_.get(result, "success", false)) {
     res.status(200).json(result);
   } else {
     res.status(500).json(result);
   }
 });
 
-
 // --------------------------------- Tuya- Heater ---------------------------------
 
 server.post("/heater", async (req, res) => {
   const { value } = req.body;
   const response = await switchHeaterqState(value);
-  await addingDataToCsv()
+  await addingDataToCsv();
   res.json({ response });
 });
 
@@ -361,7 +405,6 @@ server.get("/smartthings/v2/devices", async (req, res) => {
 });
 
 server.post("/smartthings/v2/switch", async (req, res) => {
-
   // const response = await switchWasherWater(req.body.state)
 });
 
@@ -391,7 +434,6 @@ server.get("/devices_with_thresholds", async (req, res) => {
   return res.json(devices);
 });
 
-
 server.put("/devices/mode", async (req, res) => {
   const { deviceId, mode } = req.body;
 
@@ -399,11 +441,35 @@ server.put("/devices/mode", async (req, res) => {
     await updateDeviceModeInDatabase(deviceId, mode);
     res.status(200).json({ success: true });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Error updating mode in the database' });
+    res
+      .status(500)
+      .json({ success: false, message: "Error updating mode in the database" });
   }
 });
 
+server.get("/device/:name", async (req, res) => {
+  const device = await getDeviceByName(req.params.name);
+  return res.json(device);
+});
 
+server.post("/room-device", async (req, res) => {
+  console.log("Yovel room device");
+  const { device_id, room_id, device_state } = req.body;
+  const response = await addDeviceToRoom(device_id, room_id, device_state);
+  return res.json(response);
+});
+
+server.get('/devices-by-room/:roomId', async (req, res) => {
+  const roomId = req.params.roomId;
+  const devices = await getDevicesByRoomId(roomId);
+  return res.json(devices);
+})
+
+server.get('/room-devices/:roomId', async (req, res) => {
+  const roomId = req.params.roomId;
+  const devices = await getRoomDevices(roomId);
+  return res.json(devices);
+})
 
 // --------------------------------- Machine Learnign-Recoomnadations ---------------------------------
 server.get("/update_data", async (req, res) => {
@@ -451,7 +517,6 @@ server.get("/recommend_device", async (req, res) => {
   }
 });
 
-
 // --------------------------------- Suggestions ---------------------------------
 server.get("/suggestions", async (req, res) => {
   try {
@@ -497,7 +562,7 @@ server.post("/suggestions", async (req, res) => {
   try {
     const response = await addSuggestionMenually(req.body);
     return res.status(200).send(response.data);
-  } catch (err) { }
+  } catch (err) {}
 });
 
 server.delete("/suggestions/:id", async (req, res) => {
@@ -508,9 +573,7 @@ server.delete("/suggestions/:id", async (req, res) => {
   } catch (err) {
     return res.status(400).send({ message: err.message });
   }
-})
-
-
+});
 
 // --------------------------------- Rooms ---------------------------------
 
@@ -554,6 +617,5 @@ addSuggestionsToDatabase();
 //     await getFunctionsFromDB();
 
 // }, 20000);
-
 
 server.listen(port, () => console.log(`listening on port ${port}`));
