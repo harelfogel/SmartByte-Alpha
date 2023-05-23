@@ -120,6 +120,8 @@ const generateRule = async (suggestion) => {
   const comparisonOperators = getComparisonOperator(strongestEvidence.evidence, actualValue);
   const operator = comparisonOperators[Math.floor(Math.random() * comparisonOperators.length)];
 
+  console.log("Yovel", strongest_evidence)
+
   // Get the lower boundary of the current mapping
   const discretizedActualValue = discretizeValue(strongestEvidence.evidence, actualValue[0]); // <-- Added this line
   const value = mappedValue[discretizedActualValue.toString()];
@@ -227,6 +229,8 @@ async function addSuggestionsToDatabase() {
     for (const recommendedDevice of recommendedDevices) {
       if (recommendedDevice.recommendation === "on") {
         const deviceName = recommendedDevice.variables[0]; // Extract the device name from the variables array
+        console.log(deviceName);
+        console.log(recommendedDevice.strongest_evidence);
         for (const findStrongEvidence of recommendedDevice.strongest_evidence) {
           strongestEvidence = findStrongEvidence;
           break;
@@ -264,7 +268,7 @@ async function addSuggestionsToDatabase() {
       }
     }
   } catch (error) {
-    console.error("Error while making request to Python server:", error);
+    // console.error("Error while making request to Python server:", error);
   }
 }
 
