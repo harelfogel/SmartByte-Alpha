@@ -2,128 +2,144 @@ const Device = require("../models/Device");
 const RoomDevice = require("../models/RoomDevice");
 const Room = require("../models/Room");
 
-
 const getDevices = async () => {
   try {
     const devices = await Device.find();
     return devices;
-  }
-  catch (err) {
+  } catch (err) {
     console.log(err);
   }
-}
+};
 
 const updateDeviceModeInDatabase = async (deviceId, mode) => {
   try {
-    const result = await Device.updateOne({ device_id: deviceId }, { $set: { state: 'on', mode } });
+    const result = await Device.updateOne(
+      { device_id: deviceId },
+      { $set: { state: "on", mode } }
+    );
     if (result.modifiedCount === 1) {
-      console.log('Device mode and state updated successfully in the database');
+      console.log("Device mode and state updated successfully in the database");
       return true;
     } else {
-      console.log('No device was found with the provided device_id');
+      console.log("No device was found with the provided device_id");
       return false;
     }
   } catch (error) {
-    console.error('Error updating device mode and state in the database:', error);
+    console.error(
+      "Error updating device mode and state in the database:",
+      error
+    );
     return false;
   }
 };
 
-
 const getDeviceByName = async (name) => {
   try {
     const device = await Device.findOne({ name: name.toLowerCase() });
-    if(device){
+    if (device) {
       return {
         statusCode: 200,
-        data: device
-      }
+        data: device,
+      };
     }
-  }
-  catch(err){
+  } catch (err) {
     return {
       statusCode: 500,
-      message: err.message
-    }
+      message: err.message,
+    };
   }
-}
-
-
+};
 
 const addDeviceToRoom = async (deviceId, roomId, deviceState) => {
   try {
-
     const roomDeviceData = {
       room_id: roomId,
       device_id: deviceId,
-      state: deviceState
-    }
+      state: deviceState,
+    };
 
-    const newRoomDevice = new RoomDevice({...roomDeviceData});
+    const newRoomDevice = new RoomDevice({ ...roomDeviceData });
     newRoomDevice.id = Math.floor(10000000 + Math.random() * 90000000);
     await newRoomDevice.save();
 
     return {
       statusCode: 200,
-      data: 'Device added successfully'
-    }
-  }
-  catch (err) {
+      data: "Device added successfully",
+    };
+  } catch (err) {
     return {
       statusCode: 500,
-      message: err.message
-    }
+      message: err.message,
+    };
   }
-}
-
-
+};
 
 const getDevicesByRoomId = async (roomId) => {
-  try{
+  try {
     const devices = await Device.aggregate([
       {
         $lookup: {
           from: "rooms-devices",
           localField: "device_id",
           foreignField: "device_id",
-          as: "roomDevices"
+          as: "roomDevices",
         },
       },
       {
         $match: {
-          "roomDevices.room_id": roomId
-        }
-      }
-    ])
+          "roomDevices.room_id": roomId,
+        },
+      },
+    ]);
     return {
       statusCode: 200,
-      data: devices
-    }
-  }
-  catch(err) {
+      data: devices,
+    };
+  } catch (err) {
     return {
       statusCode: 500,
-      message: err.message
-    }
+      message: err.message,
+    };
   }
-}
+};
 
 const getRoomDevices = async (roomId) => {
   try {
-    const devices = await RoomDevice.find({room_id: roomId});
+    const devices = await RoomDevice.find({ room_id: roomId });
     return {
       statusCode: 200,
-      data: devices
-    }
+      data: devices,
+    };
+  } catch (err) {
+    return {
+      statusCode: 500,
+      message: err.message,
+    };
   }
-  catch(err) {
+};
+
+const setRoomDeviceState = async (id, state) => {
+  try {
+    const response = await RoomDevice.updateOne({ id }, { state: state ? "on" : "off"});
+    console.log(response)
+    
+    if(response.modifiedCount === 0) {
+      throw new Error("Unable to update room device state")
+    }
+
+    return {
+      statusCode: 200,
+      message: 'Room device has been updated'
+    }
+    
+  
+  } catch (err) {
     return {
       statusCode: 500,
       message: err.message
     }
   }
-} 
-
+};
 
 module.exports = {
   getDevices,
@@ -131,5 +147,6 @@ module.exports = {
   getDeviceByName,
   addDeviceToRoom,
   getDevicesByRoomId,
-  getRoomDevices
-}
+  getRoomDevices,
+  setRoomDeviceState
+};

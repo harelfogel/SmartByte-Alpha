@@ -49,7 +49,8 @@ const {
   getDeviceByName,
   addDeviceToRoom,
   getDevicesByRoomId,
-  getRoomDevices
+  getRoomDevices,
+  setRoomDeviceState
 } = require("./services/devices.service.js");
 const {
   callBayesianScript,
@@ -469,6 +470,20 @@ server.get('/room-devices/:roomId', async (req, res) => {
   const roomId = req.params.roomId;
   const devices = await getRoomDevices(roomId);
   return res.json(devices);
+})
+
+server.put('/room-devices', async (req, res) => {
+  try {
+    const {state, id} = req.body;
+    const response = await setRoomDeviceState(id, state);
+    if(response.statusCode !== 200) {
+      throw new Error(response.message)
+    }
+    res.send(response);
+  }
+  catch(err) {
+    return res.status(500).send(err.message);
+  }
 })
 
 // --------------------------------- Machine Learnign-Recoomnadations ---------------------------------
