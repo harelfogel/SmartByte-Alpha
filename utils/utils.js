@@ -54,6 +54,13 @@ const mapTemperature = (value) => {
   return 'above 27°C';
 };
 
+const checkIfHour = (value) => {
+  if (value === "morning") return 1;
+  if (value === 'afternoon') return 2;
+  if (value === 'evening') return 3;
+  else return value;
+}
+
 const mapHumidity = (value) => {
   if (value === 1) return 'below 30%';
   if (value === 2) return '30-60%';
@@ -87,5 +94,6 @@ module.exports = {
   mapDistance,
   mapHumidity,
   mapSeason,
-  mapTemperature
+  mapTemperature,
+  checkIfHour
 }
