@@ -217,6 +217,7 @@ function getRandomValue(maxVal, minVal, numberAfterTheDot) {
 module.exports = {
   callBayesianScript,
   runBayesianScript,
-  addingDataToCsv
+  addingDataToCsv,
+  classifyHour
 }
 

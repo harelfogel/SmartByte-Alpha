@@ -8,6 +8,7 @@ const {
   discretizeHour,
   discretizeHumidity,
   discretizeTemperature,
+  checkIfHour
 } = require("../utils/utils");
 const { clients } = require("../ws");
 
@@ -96,8 +97,6 @@ const mapEvidenceValue = (evidenceType) => {
 };
 
 
-
-
 const getStrongestEvidence = (evidence) => {
   const strongestEvidence = evidence.reduce((prev, current) =>
     prev.value > current.value ? prev : current
@@ -120,14 +119,16 @@ const generateRule = async (suggestion) => {
   const comparisonOperators = getComparisonOperator(strongestEvidence.evidence, actualValue);
   const operator = comparisonOperators[Math.floor(Math.random() * comparisonOperators.length)];
 
-  console.log("Yovel", strongest_evidence)
 
   // Get the lower boundary of the current mapping
   const discretizedActualValue = discretizeValue(strongestEvidence.evidence, actualValue[0]); // <-- Added this line
-  const value = mappedValue[discretizedActualValue.toString()];
+  let value = mappedValue[discretizedActualValue.toString()];
+  console.log(value)
+  value = checkIfHour(value)
   const conditions = `${strongestEvidence.evidence} ${comparisonOperators} ${value}`;
   const action = `("${device.split('_')[0]} ${state} for ${average_duration} minutes")`;
   const generatedRule = `IF ${conditions} THEN TURN${action}`;
+  console.log(generatedRule)
   return generatedRule;
 };
 
@@ -166,7 +167,7 @@ async function updateRulesForExistingSuggestions() {
     for (const suggestion of suggestionsWithoutRule) {
       const rule = generateRule(suggestion); // Use the generateRule function to generate the rule
       await Suggestion.updateOne(
-        { id: suggestion.id },
+        { id: suggestion.id },  
         { $set: { rule: rule } }
       ); // Update the suggestion with the generated rule
     }

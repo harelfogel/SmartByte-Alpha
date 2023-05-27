@@ -610,7 +610,7 @@ server.get("/rooms/:id", async (req, res) => {
     return res.status(400).send({ message: err.message });
   }
 });
-
+parseSensorAndWriteToMongo();
 addSuggestionsToDatabase();
 
 // Schedule the job to run at specific hours

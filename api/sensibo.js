@@ -3,6 +3,8 @@ const Device = require("../models/Device");
 const { updateDeviceModeInDatabase } = require("../services/devices.service");
 const { addingDataToCsv } = require("../utils/machineLearning.js");
 const SensorValue = require("../models/SensorValue");
+const { classifyHour } = require("../utils/machineLearning")
+
 
 const test = 0;
 const analyzeFunc = async (func) => {
@@ -14,7 +16,7 @@ const analyzeFunc = async (func) => {
     if (isWithDuration) {
       durationString = func.split(" for ")[1];
       time = parseInt(durationString.substring(0, durationString.indexOf(" ")));
-      units = durationString.split(" ")[1];
+      units = durationString.split(" ")[1]; 
       if (units !== "minutes" && units !== "hours") {
         throw new Error("Units has to be minutes or hours");
       }
@@ -142,7 +144,7 @@ const parseSensorAndWriteToMongo = async () => {
     } else if (currentMonth >= 6 && currentMonth <= 8) {
       season = 2; // Summer
     } else if (currentMonth >= 9 && currentMonth <= 11) {
-      season = 4; // Autumn
+      season = 4; // Fall
     } else {
       season = 1; // Winter
     }
@@ -153,8 +155,15 @@ const parseSensorAndWriteToMongo = async () => {
       sensor_type: "season",
     });
 
+    const currentHour = currentDate.getHours();
+    let timeOfTheDay = classifyHour(currentHour)
+    const timeOfTheDayValue = `VAR hour=${timeOfTheDay}`;
+    const timeDocument = new SensorValue({
+      value: timeOfTheDayValue,
+      sensor_type: "hour",
+    });
 
-    await Promise.all([temperatureDocument.save(), humidityDocument.save(), seasonDocument.save()]);
+    await Promise.all([temperatureDocument.save(), humidityDocument.save(), seasonDocument.save(), timeDocument.save()]);
 
     // console.log(`Temperature: ${temperature} Humidity: ${humidity} saved to database.`);
   } catch (error) {
