@@ -13,6 +13,10 @@ const roomDeviceSchema = new mongoose.Schema({
     type: String,
     required: true,
   }, 
+  device_name: {
+    type: String,
+    required: true,
+  }, 
   state: {
     type: String,
     required: true,
