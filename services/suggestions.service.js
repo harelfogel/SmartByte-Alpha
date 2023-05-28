@@ -106,7 +106,6 @@ const getStrongestEvidence = (evidence) => {
 
 
 const generateRule = async (suggestion) => {
-  console.log("Yovel generate")
   const { device, strongest_evidence, state, average_duration } = suggestion;
   // Get strongest evidence
   const strongestEvidence = getStrongestEvidence(strongest_evidence);
@@ -120,10 +119,8 @@ const generateRule = async (suggestion) => {
     
     const discretizedActualValue = discretizeValue(strongestEvidence.evidence, actualValue[0]); // <-- Added this line
     let value = mappedValue[discretizedActualValue.toString()];
-    // console.log("Yovel reduce", {current, mappedValue, actualValue, value})
     
     const currentCondition = `${current.evidence} ${comparisonOperators} ${value}`
-    console.log("Yovel", {currentCondition})
     
     if(acc === ''){
       return currentCondition
@@ -138,7 +135,6 @@ const generateRule = async (suggestion) => {
     // value = checkIfHour(value)
     // const conditions = `${current.evidence} ${comparisonOperators} ${value}`;
   },'')
-  // console.log("Yovel final", conditionsTest)
 
 
 
@@ -148,7 +144,6 @@ const generateRule = async (suggestion) => {
     console.error("Error: Undefined values encountered in strongest evidence or mapped value");
     return;
   }
-  // console.log("Yovel strongest", strongestEvidence)
   // Get comparison operator
   const comparisonOperators = getComparisonOperator(strongestEvidence.evidence, actualValue);
   const operator = comparisonOperators[Math.floor(Math.random() * comparisonOperators.length)];
@@ -221,7 +216,6 @@ const getSuggestions = async () => {
 };
 
 async function addSuggestionsToDatabase() {
-  // console.log("Yovel ADD")
   try {
     const latestSensorValues = await getLatestSensorValues();
     const { season, hour } = getCurrentSeasonAndHour();
@@ -289,7 +283,6 @@ async function addSuggestionsToDatabase() {
 
         // If a suggestion with the same rule doesn't exist, save the new suggestion
         if (!existingSuggestion) {
-          console.log("YOVEL GOOD", clients)
           clients.forEach((client) => {
             client.send("New Suggestion Added!");
             console.log("Message sent")
