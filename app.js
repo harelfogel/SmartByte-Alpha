@@ -50,7 +50,8 @@ const {
   addDeviceToRoom,
   getDevicesByRoomId,
   getRoomDevices,
-  setRoomDeviceState
+  setRoomDeviceState,
+  createNewDevice,
 } = require("./services/devices.service.js");
 const {
   callBayesianScript,
@@ -234,13 +235,11 @@ server.post("/smartthings/toggle", function (req, res) {
   toggleLaundry(newState, deviceId)
     .then(() => res.json({ statusCode: 200, message: "Toggled successfully" }))
     .catch((err) =>
-      res
-        .status(500)
-        .json({
-          statusCode: 500,
-          message: "Failed to toggle",
-          error: err.message,
-        })
+      res.status(500).json({
+        statusCode: 500,
+        message: "Failed to toggle",
+        error: err.message,
+      })
     );
 });
 
@@ -259,13 +258,11 @@ server.get("/laundry/details", async (req, res) => {
         .json({ statusCode: 500, message: "Failed to fetch laundry details" });
     }
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        statusCode: 500,
-        message: "Failed to fetch laundry details",
-        error: error.message,
-      });
+    res.status(500).json({
+      statusCode: 500,
+      message: "Failed to fetch laundry details",
+      error: error.message,
+    });
   }
 });
 
@@ -288,13 +285,11 @@ server.post("/laundry/update", async (req, res) => {
       device: updatedDevice,
     });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        statusCode: 500,
-        message: "Failed to update",
-        error: error.message,
-      });
+    res.status(500).json({
+      statusCode: 500,
+      message: "Failed to update",
+      error: error.message,
+    });
   }
 });
 
@@ -332,13 +327,11 @@ server.post("/laundry/update", async (req, res) => {
       device: updatedDevice,
     });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        statusCode: 500,
-        message: "Failed to update",
-        error: error.message,
-      });
+    res.status(500).json({
+      statusCode: 500,
+      message: "Failed to update",
+      error: error.message,
+    });
   }
 });
 
@@ -458,31 +451,40 @@ server.post("/room-device", async (req, res) => {
   return res.json(response);
 });
 
-server.get('/devices-by-room/:roomId', async (req, res) => {
+server.get("/devices-by-room/:roomId", async (req, res) => {
   const roomId = req.params.roomId;
   const devices = await getDevicesByRoomId(roomId);
   return res.json(devices);
-})
+});
 
-server.get('/room-devices/:roomId', async (req, res) => {
+server.get("/room-devices/:roomId", async (req, res) => {
   const roomId = req.params.roomId;
   const devices = await getRoomDevices(roomId);
   return res.json(devices);
-})
+});
 
-server.put('/room-devices', async (req, res) => {
+server.put("/room-devices", async (req, res) => {
   try {
-    const {state, id} = req.body;
+    const { state, id } = req.body;
     const response = await setRoomDeviceState(id, state);
-    if(response.statusCode !== 200) {
-      throw new Error(response.message)
+    if (response.statusCode !== 200) {
+      throw new Error(response.message);
     }
     res.send(response);
-  }
-  catch(err) {
+  } catch (err) {
     return res.status(500).send(err.message);
   }
-})
+});
+
+server.post("/devices", async (req, res) => {
+  try {
+    const { device, room_id } = req.body;
+    const response = await createNewDevice(device, room_id);
+    return res.status(200).send(response.data);
+  } catch (err) {
+    return res.status(500).send(err.message);
+  }
+});
 
 // --------------------------------- Machine Learnign-Recoomnadations ---------------------------------
 server.get("/update_data", async (req, res) => {

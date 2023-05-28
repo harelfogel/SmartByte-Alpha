@@ -50,12 +50,13 @@ const getDeviceByName = async (name) => {
   }
 };
 
-const addDeviceToRoom = async (deviceId, roomId, deviceState) => {
+const addDeviceToRoom = async (deviceId, deviceName, roomId, deviceState) => {
   try {
     const roomDeviceData = {
       room_id: roomId,
       device_id: deviceId,
       state: deviceState,
+      device_name: deviceName,
     };
 
     const newRoomDevice = new RoomDevice({ ...roomDeviceData });
@@ -120,24 +121,51 @@ const getRoomDevices = async (roomId) => {
 
 const setRoomDeviceState = async (id, state) => {
   try {
-    const response = await RoomDevice.updateOne({ id }, { state: state ? "on" : "off"});
-    console.log(response)
-    
-    if(response.modifiedCount === 0) {
-      throw new Error("Unable to update room device state")
+    const response = await RoomDevice.updateOne(
+      { id },
+      { state: state ? "on" : "off" }
+    );
+    console.log(response);
+
+    if (response.modifiedCount === 0) {
+      throw new Error("Unable to update room device state");
     }
 
     return {
       statusCode: 200,
-      message: 'Room device has been updated'
-    }
-    
-  
+      message: "Room device has been updated",
+    };
   } catch (err) {
     return {
       statusCode: 500,
-      message: err.message
-    }
+      message: err.message,
+    };
+  }
+};
+
+const createNewDevice = async (device, roomId) => {
+  try {
+    const { name } = device;
+    const newDevice = new Device({
+      name,
+      state: "off",
+    });
+
+    // add device to devices
+    const newDeviceId = Math.floor(10000000 + Math.random() * 90000000);
+    newDevice.device_id = newDeviceId;
+    newDevice.save();
+
+    addDeviceToRoom(newDeviceId, name, roomId, "off");
+    return {
+      statusCode: 200,
+      data: "Device created successfully",
+    };
+  } catch (err) {
+    return {
+      statusCode: 500,
+      message: err.message,
+    };
   }
 };
 
@@ -148,5 +176,6 @@ module.exports = {
   addDeviceToRoom,
   getDevicesByRoomId,
   getRoomDevices,
-  setRoomDeviceState
+  setRoomDeviceState,
+  createNewDevice,
 };
