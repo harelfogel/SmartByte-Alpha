@@ -106,15 +106,49 @@ const getStrongestEvidence = (evidence) => {
 
 
 const generateRule = async (suggestion) => {
+  console.log("Yovel generate")
   const { device, strongest_evidence, state, average_duration } = suggestion;
   // Get strongest evidence
   const strongestEvidence = getStrongestEvidence(strongest_evidence);
+
+  const conditions = await strongest_evidence.reduce(async(accPromise, current) => {
+    const acc = await accPromise;
+    const mappedValue = mapEvidenceValue(current.evidence);
+    const actualValue = await getActualEvidenceValue(current);
+    const comparisonOperators = getComparisonOperator(current.evidence, actualValue);
+    const operator = comparisonOperators[Math.floor(Math.random() * comparisonOperators.length)];
+    
+    const discretizedActualValue = discretizeValue(strongestEvidence.evidence, actualValue[0]); // <-- Added this line
+    let value = mappedValue[discretizedActualValue.toString()];
+    // console.log("Yovel reduce", {current, mappedValue, actualValue, value})
+    
+    const currentCondition = `${current.evidence} ${comparisonOperators} ${value}`
+    console.log("Yovel", {currentCondition})
+    
+    if(acc === ''){
+      return currentCondition
+    }
+    else {
+      return `${acc} AND ${currentCondition}`
+    }
+
+    // const discretizedActualValue = discretizeValue(current.evidence, actualValue[0]); // <-- Added this line
+    // let value = mappedValue[discretizedActualValue.toString()];
+    // // console.log(value)
+    // value = checkIfHour(value)
+    // const conditions = `${current.evidence} ${comparisonOperators} ${value}`;
+  },'')
+  // console.log("Yovel final", conditionsTest)
+
+
+
   const mappedValue = mapEvidenceValue(strongestEvidence.evidence);
   const actualValue = await getActualEvidenceValue(strongestEvidence);
   if (!strongestEvidence.evidence || !mappedValue) {
     console.error("Error: Undefined values encountered in strongest evidence or mapped value");
     return;
   }
+  // console.log("Yovel strongest", strongestEvidence)
   // Get comparison operator
   const comparisonOperators = getComparisonOperator(strongestEvidence.evidence, actualValue);
   const operator = comparisonOperators[Math.floor(Math.random() * comparisonOperators.length)];
@@ -123,12 +157,12 @@ const generateRule = async (suggestion) => {
   // Get the lower boundary of the current mapping
   const discretizedActualValue = discretizeValue(strongestEvidence.evidence, actualValue[0]); // <-- Added this line
   let value = mappedValue[discretizedActualValue.toString()];
-  console.log(value)
+  // console.log(value)
   value = checkIfHour(value)
-  const conditions = `${strongestEvidence.evidence} ${comparisonOperators} ${value}`;
+  // const conditions = `${strongestEvidence.evidence} ${comparisonOperators} ${value}`;
   const action = `("${device.split('_')[0]} ${state} for ${average_duration} minutes")`;
   const generatedRule = `IF ${conditions} THEN TURN${action}`;
-  console.log(generatedRule)
+  console.log({generatedRule})
   return generatedRule;
 };
 
@@ -187,9 +221,11 @@ const getSuggestions = async () => {
 };
 
 async function addSuggestionsToDatabase() {
+  // console.log("Yovel ADD")
   try {
     const latestSensorValues = await getLatestSensorValues();
     const { season, hour } = getCurrentSeasonAndHour();
+   
     const currentTemperature = latestSensorValues.temperature;
     const currentHumidity = latestSensorValues.humidity;
     const currentDistance = latestSensorValues.distance;
@@ -206,7 +242,6 @@ async function addSuggestionsToDatabase() {
     const currentHumidityValue = currentHumidity.match(numberPattern);
     const currentDistanceValue = currentDistance.match(numberPattern);
 
-
     const evidence = {
       temperature: discretizeTemperature(parseFloat(currentTemperatureValue)),
       humidity: discretizeHumidity(parseFloat(currentHumidityValue)),
@@ -214,40 +249,39 @@ async function addSuggestionsToDatabase() {
       season: convertSeasonToNumber(season),
       hour: discretizeHour(hour)
     };
-
     // Call the recommend_device function with the evidence
     const response = await axios.post(
       "http://127.0.0.1:5000/recommend_device",
       {
         devices: devices,
         evidence: evidence,
-      }
-    );
-
-    const recommendedDevices = response.data;
-    let strongestEvidence;
+      } 
+      );
+      
+      const recommendedDevices = response.data;
+    let strongestEvidence = [];
     // Add the suggestions to the MongoDB database
     for (const recommendedDevice of recommendedDevices) {
       if (recommendedDevice.recommendation === "on") {
         const deviceName = recommendedDevice.variables[0]; // Extract the device name from the variables array
-        console.log(deviceName);
-        console.log(recommendedDevice.strongest_evidence);
         for (const findStrongEvidence of recommendedDevice.strongest_evidence) {
-          strongestEvidence = findStrongEvidence;
-          break;
+          strongestEvidence.push(findStrongEvidence);
         }
+        const filteredEvidence = strongestEvidence.reduce((acc, curr) => {
+          const existingEvidence = acc.find(item => item.evidence === curr.evidence);
+          if(!existingEvidence) {
+            acc.push(curr);
+          }
+          return acc;
+        },[])
         const roundedValue = Math.floor(recommendedDevice.average_duration);
         const suggestionData = {
           device: deviceName,
           average_duration: roundedValue,
-          strongest_evidence: [
-            {
-              evidence: strongestEvidence.evidence,
-              value: recommendedDevice.strongest_evidence[0].value,
-            },
-          ],
+          strongest_evidence: filteredEvidence,
           state: "on",
         };
+       
         const rule = await generateRule(suggestionData);
 
         // Check if a suggestion with the same rule already exists in the database
@@ -255,8 +289,10 @@ async function addSuggestionsToDatabase() {
 
         // If a suggestion with the same rule doesn't exist, save the new suggestion
         if (!existingSuggestion) {
+          console.log("YOVEL GOOD", clients)
           clients.forEach((client) => {
             client.send("New Suggestion Added!");
+            console.log("Message sent")
           });
           const suggestion = new Suggestion({
             id: Math.floor(10000000 + Math.random() * 90000000),
