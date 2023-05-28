@@ -49,7 +49,6 @@ const switchWasherWater = async (deviceId, status) => {
 const getLaundryDetails = async () => {
   try {
     const deviceId = process.env.LAUNDRY_DEVICE_ID;
-    console.log("Yovel", deviceId);
     const response = await axios.get(
       `${URL}/devices/${deviceId}/status`,
       {

@@ -220,7 +220,6 @@ server.get("/smartthings", async (req, res) => {
 
 server.get("/laundry/details/", async (req, res) => {
   try {
-    console.log("Yovel laundry");
     const details = await getLaundryDetails();
     res.json(details);
   } catch (error) {
@@ -454,7 +453,6 @@ server.get("/device/:name", async (req, res) => {
 });
 
 server.post("/room-device", async (req, res) => {
-  console.log("Yovel room device");
   const { device_id, room_id, device_state } = req.body;
   const response = await addDeviceToRoom(device_id, room_id, device_state);
   return res.json(response);
