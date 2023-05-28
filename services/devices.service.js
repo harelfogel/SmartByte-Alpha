@@ -92,9 +92,53 @@ const getDevicesByRoomId = async (roomId) => {
         },
       },
     ]);
+
     return {
       statusCode: 200,
       data: devices,
+    };
+  } catch (err) {
+    return {
+      statusCode: 500,
+      message: err.message,
+    };
+  }
+};
+
+const getRoomDevicesTest = async (roomId) => {
+  try {
+    const devices = await RoomDevice.find({ room_id: roomId });
+    const devicesWithIcons = await RoomDevice.aggregate([
+      {
+        $match: {room_id: roomId}
+      },
+      {
+        $lookup: {
+          from: 'devices',
+          localField: 'device_id',
+          foreignField: 'device_id',
+          as: 'device'
+        }
+      },
+      {
+        $unwind: '$device'
+      },
+      {
+        $project: {
+          _id: 0,
+          room_id: 1,
+          device_id: 1,
+          state: 1,
+          id: 1,
+          device_name: 1,
+          icon: '$device.icon'
+        }
+      }
+    ])
+
+    return {
+      statusCode: 200,
+      data: devicesWithIcons,
     };
   } catch (err) {
     return {
@@ -178,4 +222,5 @@ module.exports = {
   getRoomDevices,
   setRoomDeviceState,
   createNewDevice,
+  getRoomDevicesTest
 };

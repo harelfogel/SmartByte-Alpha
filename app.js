@@ -52,6 +52,7 @@ const {
   getRoomDevices,
   setRoomDeviceState,
   createNewDevice,
+  getRoomDevicesTest,
 } = require("./services/devices.service.js");
 const {
   callBayesianScript,
@@ -459,7 +460,13 @@ server.get("/devices-by-room/:roomId", async (req, res) => {
 
 server.get("/room-devices/:roomId", async (req, res) => {
   const roomId = req.params.roomId;
-  const devices = await getRoomDevices(roomId);
+  const devices = await getRoomDevicesTest(roomId);
+  return res.json(devices);
+});
+
+server.get("/room-devices-test/:roomId", async (req, res) => {
+  const roomId = req.params.roomId;
+  const devices = await getRoomDevicesTest(roomId);
   return res.json(devices);
 });
 

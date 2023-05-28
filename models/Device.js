@@ -23,6 +23,13 @@ const deviceSchema = new mongoose.Schema({
   details: {
     type: mongoose.Schema.Types.Mixed,
     default: {}
+  },
+  icon: {
+    type: Object,
+    default: {
+      name: 'default',
+      color: 'green'
+    }
   }
 });
 
