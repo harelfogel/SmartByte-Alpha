@@ -81,6 +81,7 @@ server.use(express.json());
 server.use(cors({ origin: true }));
 const cron = require("node-cron");
 const { simulateMotionSensor } = require("./services/motion.service.js");
+const { controlLED } = require("./services/mqtt.service.js");
 
 // Connect to MongoDB
 connectDB();
@@ -211,6 +212,19 @@ server.delete("/rules/:id", async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
+// --------------------------------- mqtt light ---------------------------------
+server.post('/led-control', function (req, res) {
+  const { color, state } = req.body;
+
+  if (!color || !state) {
+    return res.status(400).json({ error: 'Missing color or state' });
+  }
+
+  controlLED(color, state);
+
+  res.json({ message: 'LED control message sent' });
+});
+
 
 // --------------------------------- SmartThings- Laundry ---------------------------------
 
@@ -584,7 +598,7 @@ server.post("/suggestions", async (req, res) => {
   try {
     const response = await addSuggestionMenually(req.body);
     return res.status(200).send(response.data);
-  } catch (err) {}
+  } catch (err) { }
 });
 
 server.delete("/suggestions/:id", async (req, res) => {
