@@ -11,6 +11,7 @@ const {
   checkIfHour
 } = require("../utils/utils");
 const { clients } = require("../ws");
+const Rule = require("../models/Rule");
 
 const temperatureMap = {
   1: 15,
@@ -243,6 +244,7 @@ async function addSuggestionsToDatabase() {
       season: convertSeasonToNumber(season),
       hour: discretizeHour(hour)
     };
+
     // Call the recommend_device function with the evidence
     const response = await axios.post(
       "http://127.0.0.1:5000/recommend_device",
@@ -251,15 +253,19 @@ async function addSuggestionsToDatabase() {
         evidence: evidence,
       } 
       );
-      
       const recommendedDevices = response.data;
     let strongestEvidence = [];
     // Add the suggestions to the MongoDB database
     for (const recommendedDevice of recommendedDevices) {
       if (recommendedDevice.recommendation === "on") {
         const deviceName = recommendedDevice.variables[0]; // Extract the device name from the variables array
+        let idx = 0;
         for (const findStrongEvidence of recommendedDevice.strongest_evidence) {
           strongestEvidence.push(findStrongEvidence);
+          if(idx === 1){
+            break;
+          }
+          idx++;
         }
         const filteredEvidence = strongestEvidence.reduce((acc, curr) => {
           const existingEvidence = acc.find(item => item.evidence === curr.evidence);
@@ -280,12 +286,11 @@ async function addSuggestionsToDatabase() {
 
         // Check if a suggestion with the same rule already exists in the database
         const existingSuggestion = await Suggestion.findOne({ rule: rule });
-
+        const existingRule = await Rule.findOne({rule: rule})
         // If a suggestion with the same rule doesn't exist, save the new suggestion
-        if (!existingSuggestion) {
+        if (!existingSuggestion && !existingRule) {
           clients.forEach((client) => {
             client.send("New Suggestion Added!");
-            console.log("Message sent")
           });
           const suggestion = new Suggestion({
             id: Math.floor(10000000 + Math.random() * 90000000),

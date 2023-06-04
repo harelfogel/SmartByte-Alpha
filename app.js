@@ -631,7 +631,12 @@ server.get("/rooms/:id", async (req, res) => {
     return res.status(400).send({ message: err.message });
   }
 });
-addSuggestionsToDatabase();
+
+
+// setInterval(() => {
+
+  addSuggestionsToDatabase();
+// },4000)
 
 // Schedule the job to run at specific hours
 //schedule.scheduleJob("0 8,12,14,18,20 * * *", addSuggestionsToDatabase);
