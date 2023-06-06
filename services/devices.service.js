@@ -60,7 +60,7 @@ const addDeviceToRoom = async (deviceId, deviceName, roomId, deviceState) => {
     };
 
     const newRoomDevice = new RoomDevice({ ...roomDeviceData });
-    newRoomDevice.id = Math.floor(10000000 + Math.random() * 90000000);
+    newRoomDevice.id = `${roomId}-${deviceId}`;
     await newRoomDevice.save();
 
     return {
@@ -213,6 +213,23 @@ const createNewDevice = async (device, roomId) => {
   }
 };
 
+const getDeviceIdByDeviceName = async (deviceName) => {
+  try{
+    const device = await Device.findOne({ name: deviceName });
+    if (!device) {
+      throw new Error('room not found');
+    }
+    return device.device_id;
+  } catch(err) {
+    return {
+      statusCode: 500,
+      message: err.message
+    }
+  }
+}
+
+
+
 module.exports = {
   getDevices,
   updateDeviceModeInDatabase,
@@ -222,5 +239,6 @@ module.exports = {
   getRoomDevices,
   setRoomDeviceState,
   createNewDevice,
-  getRoomDevicesTest
+  getRoomDevicesTest,
+  getDeviceIdByDeviceName
 };
