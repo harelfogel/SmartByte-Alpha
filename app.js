@@ -82,6 +82,7 @@ server.use(cors({ origin: true }));
 const cron = require("node-cron");
 const { simulateMotionSensor } = require("./services/motion.service.js");
 const { controlLED } = require("./services/mqtt.service.js");
+const mqttService = require("./services/mqtt.service.js");
 
 // Connect to MongoDB
 connectDB();
@@ -224,6 +225,16 @@ server.post('/led-control', function (req, res) {
 
   res.json({ message: 'LED control message sent' });
 });
+
+server.get('/soilMoisture', function (req, res) {
+  const latestSoilMoisture = mqttService.getLatestSoilMoisture();
+  if (latestSoilMoisture !== null) {
+    res.json({ soilMoisture: latestSoilMoisture });
+  } else {
+    res.status(404).json({ error: 'No soil moisture data available' });
+  }
+});
+
 
 
 // --------------------------------- SmartThings- Laundry ---------------------------------
@@ -635,7 +646,7 @@ server.get("/rooms/:id", async (req, res) => {
 
 // setInterval(() => {
 
-  addSuggestionsToDatabase();
+addSuggestionsToDatabase();
 // },4000)
 
 // Schedule the job to run at specific hours
