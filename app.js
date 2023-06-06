@@ -678,7 +678,7 @@ setInterval( async() => {
   //   await removeSensorValueByType('hour')
   //   await removeSensorValueByType('season')
   //   await parseSensorAndWriteToMongo();
-  }, 2000)
+  }, 20 * 1000)
 
 
 

@@ -60,7 +60,7 @@ const addDeviceToRoom = async (deviceId, deviceName, roomId, deviceState) => {
     };
 
     const newRoomDevice = new RoomDevice({ ...roomDeviceData });
-    newRoomDevice.id = Math.floor(10000000 + Math.random() * 90000000);
+    newRoomDevice.id = `${roomId}-${deviceId}`;
     await newRoomDevice.save();
 
     return {
