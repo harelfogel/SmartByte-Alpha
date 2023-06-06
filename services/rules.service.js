@@ -83,8 +83,8 @@ const insertRuleToDB = async (rule, isStrict) => {
     }
 
     if (rule.includes('hour')) {
-      if (rule.includes('mornning')) {
-        rule = rule.replace('mornning', '1');
+      if (rule.includes('morning')) {
+        rule = rule.replace('morning', '1');
       } else if (rule.includes('afternoon')) {
         rule = rule.replace('afternoon', '2');
       } else if (rule.includes('evening')) {

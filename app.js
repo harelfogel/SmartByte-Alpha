@@ -672,7 +672,7 @@ server.get("/rooms-name/:name", async (req, res) => {
 
 setInterval( async() => {
   
-      // await getFunctionsFromDB();
+      await getFunctionsFromDB();
   //   await removeSensorValueByType('temperature');
   //   await removeSensorValueByType('humidity');
   //   await removeSensorValueByType('hour')

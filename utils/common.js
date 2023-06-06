@@ -18,7 +18,7 @@ const removeSensorValueByType = async (sensorType) => {
 const getFunctionsFromDB = async () => {
     try {
         const functions = await Function.find();
-        // const response = await Function.deleteMany({});
+        const response = await Function.deleteMany({});
         functions.map(async (func) => {
             await activateDevices(func.function.toLowerCase())
         })
