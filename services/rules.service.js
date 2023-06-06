@@ -81,6 +81,18 @@ const insertRuleToDB = async (rule, isStrict) => {
         console.log('No specific condition matched.');
       }
     }
+
+    if (rule.includes('hour')) {
+      if (rule.includes('mornning')) {
+        rule = rule.replace('mornning', '1');
+      } else if (rule.includes('afternoon')) {
+        rule = rule.replace('afternoon', '2');
+      } else if (rule.includes('evening')) {
+        rule = rule.replace('evening', '3');
+      } else {
+        console.log('No specific condition matched.');
+      }
+    }
     console.log({ isStrict });
     const newRule = new Rule({ rule, isStrict });
     newRule.id = Math.floor(10000000 + Math.random() * 90000000);
