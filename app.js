@@ -70,7 +70,7 @@ const { getLatestSensorValues } = require("./services/sensorValues.service.js");
 const { detectMotion } = require("./services/motion.service.js");
 const { response } = require("express");
 const Device = require("./models/Device.js");
-const { getRooms, getRoomById } = require("./services/rooms.service.js");
+const { getRooms, getRoomById, getRoomIdByRoomName } = require("./services/rooms.service.js");
 const _ = require("lodash");
 const { sendEmail } = require("./utils/nodeMailer.js");
 const { getSensors } = require("./services/sensors.service.js");
@@ -632,10 +632,22 @@ server.get("/rooms/:id", async (req, res) => {
   }
 });
 
+server.get("/rooms-name/:name", async (req, res) => {
+  try{
+    const roomName = req.params.name;
+    const response = await getRoomIdByRoomName(roomName);
+    if(!response)
+      return res.status(200).send(_.get(response,'data.id'));
+    throw new Error(response.message)
+  }catch(err){
+    return res.status(400).send({ message: err.message });
+  }
+})
+
 
 // setInterval(() => {
 
-  addSuggestionsToDatabase();
+  // addSuggestionsToDatabase();
 // },4000)
 
 // Schedule the job to run at specific hours
@@ -654,8 +666,20 @@ server.get("/rooms/:id", async (req, res) => {
 //     await removeSensorValueByType('temperature');
 //     await removeSensorValueByType('humidity');
 //     await parseSensorAndWriteToMongo();
-//     await getFunctionsFromDB();
 
 // }, 20000);
+
+
+setInterval( async() => {
+  
+      // await getFunctionsFromDB();
+  //   await removeSensorValueByType('temperature');
+  //   await removeSensorValueByType('humidity');
+  //   await removeSensorValueByType('hour')
+  //   await removeSensorValueByType('season')
+  //   await parseSensorAndWriteToMongo();
+  }, 2000)
+
+
 
 server.listen(port, () => console.log(`listening on port ${port}`));

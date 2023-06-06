@@ -8,6 +8,7 @@ const { classifyHour } = require("../utils/machineLearning")
 
 const test = 0;
 const analyzeFunc = async (func) => {
+  console.log("ANALYZE")
   try {
     const forPattern = /\b(for)\b/;
     const isWithDuration = forPattern.test(func);
@@ -69,23 +70,25 @@ const validateDegree = (degree) => {
 };
 
 const switchAcState = async (state, temperature = null) => {
+  console.log("SWITCH AC")
   try {
     if (!temperature || validateDegree(temperature)) {
-      const response = await axios.post(
-        `https://home.sensibo.com/api/v2/pods/${process.env.SENSIBO_DEVICE_ID}/acStates?apiKey=${process.env.SENSIBO_API_KEY}`,
-        {
-          acState: {
-            on: state,
-            targetTemperature: temperature,
-          },
-        }
-      );
+      // const response = await axios.post(
+      //   `https://home.sensibo.com/api/v2/pods/${process.env.SENSIBO_DEVICE_ID}/acStates?apiKey=${process.env.SENSIBO_API_KEY}`,
+      //   {
+      //     acState: {
+      //       on: state,
+      //       targetTemperature: temperature,
+      //     },
+      //   }
+      // );
       await Device.updateOne(
         { device_id: "9EimtVDZ" },
         { state: state ? "on" : "off" }
       );
+      console.log("AC ON")
       console.log("-----------Adding data to csv---------------");
-      await addingDataToCsv()
+      // await addingDataToCsv()
       return { statusCode: 200, data: response.data.result };
     } else {
       throw new Error("Temperature has to be between 16 and 30");
@@ -125,6 +128,8 @@ const parseSensorAndWriteToMongo = async () => {
     const response = await getSensiboSensors();
     const data = response.data.result[0];
     const { temperature, humidity } = data;
+
+    // console.log({temperature})
     const temperatureValue = `VAR temperature=${temperature.toFixed(1)}`;
     const humidityValue = `VAR humidity=${humidity.toFixed(1)}`;
     const temperatureDocument = new SensorValue({
@@ -165,7 +170,7 @@ const parseSensorAndWriteToMongo = async () => {
 
     await Promise.all([temperatureDocument.save(), humidityDocument.save(), seasonDocument.save(), timeDocument.save()]);
 
-    // console.log(`Temperature: ${temperature} Humidity: ${humidity} saved to database.`);
+    console.log(`Temperature: ${temperature} Humidity: ${humidity} saved to database.`);
   } catch (error) {
     console.error(error);
   }

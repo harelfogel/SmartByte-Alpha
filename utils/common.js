@@ -2,6 +2,9 @@ const { default: axios } = require("axios");
 const Function = require("../models/Function");
 const SensorValue = require("../models/SensorValue");
 const { switchAcState, analyzeFunc } = require("../api/sensibo");
+const {getRoomIdByRoomName} = require("../services/rooms.service");
+const {getDeviceIdByDeviceName, setRoomDeviceState} = require("../services/devices.service");
+const RoomDevice = require("../models/RoomDevice");
 
 
 const removeSensorValueByType = async (sensorType) => {
@@ -15,7 +18,7 @@ const removeSensorValueByType = async (sensorType) => {
 const getFunctionsFromDB = async () => {
     try {
         const functions = await Function.find();
-        const response = await Function.deleteMany({});
+        // const response = await Function.deleteMany({});
         functions.map(async (func) => {
             await activateDevices(func.function.toLowerCase())
         })
@@ -25,6 +28,20 @@ const getFunctionsFromDB = async () => {
 }
 
 const activateDevices = async (func) => {
+    const actionParsed = func.split(' ');
+    const device = actionParsed[0];
+    const roomName = actionParsed[actionParsed.length - 1];
+    const roomId = await getRoomIdByRoomName(roomName);
+    const deviceId = await getDeviceIdByDeviceName(device);
+    const roomDeviceId = `${roomId}-${deviceId}`;
+    const roomDevice = await RoomDevice.find({id: roomDeviceId});
+    if(roomDevice.length === 0) {
+        console.log(`There is no ${device} in ${roomName}`)
+        return `There is no ${device} in ${roomName}`;
+    }
+
+    const state = actionParsed[1] === 'on' ? true : false;
+    setRoomDeviceState(roomDeviceId, state)
     const acPattern = /\b(ac)\b/;
     const heaterPattern = /\b(heater)\b/;
 

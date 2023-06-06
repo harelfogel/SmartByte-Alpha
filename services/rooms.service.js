@@ -24,7 +24,25 @@ const getRoomById = async (id) => {
   }
 };
 
+const getRoomIdByRoomName = async (roomName) => {
+  try{
+    const room = await Room.findOne({ name: roomName });
+    if (!room) {
+      throw new Error('room not found');
+    }
+    return room.id;
+  } catch(err) {
+    return {
+      statusCode: 500,
+      message: err.message
+    }
+  }
+}
+
+
+
 module.exports = {
   getRooms,
   getRoomById,
+  getRoomIdByRoomName
 };
