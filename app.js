@@ -700,7 +700,9 @@ server.get('/devices/rooms/:deviceName', async (req, res) => {
 
 // setInterval(() => {
 
+
 //   addSuggestionsToDatabase();
+
 
 // },4000)
 
@@ -726,7 +728,8 @@ server.get('/devices/rooms/:deviceName', async (req, res) => {
 
 setInterval(async () => {
 
-  // await getFunctionsFromDB();
+  await getFunctionsFromDB();
+
   //   await removeSensorValueByType('temperature');
   //   await removeSensorValueByType('humidity');
   //   await removeSensorValueByType('hour')
