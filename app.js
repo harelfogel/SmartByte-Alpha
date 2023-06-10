@@ -84,6 +84,7 @@ const cron = require("node-cron");
 const { simulateMotionSensor } = require("./services/motion.service.js");
 const { controlLED } = require("./services/mqtt.service.js");
 const mqttService = require("./services/mqtt.service.js");
+const { Server } = require("ws");
 
 // Connect to MongoDB
 connectDB();
@@ -214,7 +215,7 @@ server.delete("/rules/:id", async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
-// --------------------------------- mqtt light ---------------------------------
+// --------------------------------- MQTT endpoints ---------------------------------
 server.post('/led-control', function (req, res) {
   const { color, state } = req.body;
 
@@ -228,11 +229,29 @@ server.post('/led-control', function (req, res) {
 });
 
 server.get('/soilMoisture', function (req, res) {
+
   const latestSoilMoisture = mqttService.getLatestSoilMoisture();
   if (latestSoilMoisture !== null) {
     res.json({ soilMoisture: latestSoilMoisture });
   } else {
     res.status(404).json({ error: 'No soil moisture data available' });
+  }
+});
+
+server.post('/pump', function (req, res) {
+  // Extract the state and duration from the request body
+  const { state, duration } = req.body;
+
+  // Convert duration from minutes to milliseconds
+  const durationInMilliseconds = duration * 60 * 1000;
+
+  // Start the pump
+  if (state === 'ON') {
+    mqttService.controlPump('ON');
+    setTimeout(() => mqttService.controlPump('OFF'), durationInMilliseconds); // Stop the pump after the specified duration
+    res.json({ message: 'Pump operation started' });
+  } else {
+    res.status(400).json({ error: 'Invalid state' });
   }
 });
 
@@ -645,13 +664,13 @@ server.get("/rooms/:id", async (req, res) => {
 });
 
 server.get("/rooms-name/:name", async (req, res) => {
-  try{
+  try {
     const roomName = req.params.name;
     const response = await getRoomIdByRoomName(roomName);
-    if(!response)
-      return res.status(200).send(_.get(response,'data.id'));
+    if (!response)
+      return res.status(200).send(_.get(response, 'data.id'));
     throw new Error(response.message)
-  }catch(err){
+  } catch (err) {
     return res.status(400).send({ message: err.message });
   }
 })
@@ -705,15 +724,15 @@ server.get('/devices/rooms/:deviceName', async (req, res) => {
 // }, 2000);
 
 
-setInterval( async() => {
-  
-      // await getFunctionsFromDB();
-    // await removeSensorValueByType('temperature');
+setInterval(async () => {
+
+  // await getFunctionsFromDB();
+  //   await removeSensorValueByType('temperature');
   //   await removeSensorValueByType('humidity');
   //   await removeSensorValueByType('hour')
   //   await removeSensorValueByType('season')
   //   await parseSensorAndWriteToMongo();
-  }, 20 * 1000)
+}, 20 * 1000)
 
 
 
