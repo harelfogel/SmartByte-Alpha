@@ -220,7 +220,7 @@ async function addSuggestionsToDatabase() {
   try {
     const latestSensorValues = await getLatestSensorValues();
     const { season, hour } = getCurrentSeasonAndHour();
-   
+
     const currentTemperature = latestSensorValues.temperature;
     const currentHumidity = latestSensorValues.humidity;
     const currentDistance = latestSensorValues.distance;
