@@ -53,6 +53,7 @@ const {
   setRoomDeviceState,
   createNewDevice,
   getRoomDevicesTest,
+  getRoomsByDeviceName,
 } = require("./services/devices.service.js");
 const {
   callBayesianScript,
@@ -674,10 +675,34 @@ server.get("/rooms-name/:name", async (req, res) => {
   }
 })
 
+server.get("/rooms/devices/:roomId", async (req, res) => {
+  try{
+
+    const roomId = req.params.roomId;
+    const response = await getRoomDevices(roomId);
+    return res.status(200).send(response.data)
+  } catch(err){
+
+  }
+})
+
+server.get('/devices/rooms/:deviceName', async (req, res) => {
+  try{
+
+    const deviceName = req.params.deviceName;
+    const response = await getRoomsByDeviceName(deviceName);
+    return res.status(200).send(response);
+  }catch(err){
+
+  }
+})
+
 
 // setInterval(() => {
 
-// addSuggestionsToDatabase();
+
+//   addSuggestionsToDatabase();
+
 
 // },4000)
 
@@ -693,17 +718,18 @@ server.get("/rooms-name/:name", async (req, res) => {
 // getHeaterState();
 
 // setInterval(async() => {
-//     // removeAllSensorValues();
-//     await removeSensorValueByType('temperature');
-//     await removeSensorValueByType('humidity');
+//     removeAllSensorValues();
+// //     await removeSensorValueByType('temperature');
+// //     await removeSensorValueByType('humidity');
 //     await parseSensorAndWriteToMongo();
 
-// }, 20000);
+// }, 2000);
 
 
 setInterval(async () => {
 
   await getFunctionsFromDB();
+
   //   await removeSensorValueByType('temperature');
   //   await removeSensorValueByType('humidity');
   //   await removeSensorValueByType('hour')

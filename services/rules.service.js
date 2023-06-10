@@ -35,11 +35,21 @@ const validateRule = (rule) => {
   // }
   const sensor = parsedRule[1].split(operator)[0];
 
+  const room = rule.split('in ')[1];
+
   if (!/^(temperature|distance|humidity|hour|season)$/i.test(sensor)) {
     return {
       statusCode: 400,
       message:
         "Rule must contain one of theses sensor's parameters: temperature, distance, humidity,hour or season",
+    };
+  }
+
+  if (!/\b(kitchen|living room|dining room|bedroom|bathroom|bedroom)\b/i.test(rule)) {
+    return {
+      statusCode: 400,
+      message:
+        "You must specify a room",
     };
   }
 
