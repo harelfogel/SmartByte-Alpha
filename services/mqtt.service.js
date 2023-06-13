@@ -19,13 +19,15 @@ client.on('connect', function () {
 });
 
 
+setInterval(() => {
 
-client.on('message', function (topic, message) {
-    if (topic == 'esp32/soilMoisture') {
-        // console.log(`Received soil moisture: ${message.toString()}`);
-        latestSoilMoisture = message.toString();
-    }
-});
+    client.once('message', function (topic, message) {
+        if (topic == 'esp32/soilMoisture') {
+            // console.log(`Received soil moisture: ${message.toString()}`);
+            latestSoilMoisture = message.toString();
+        }
+    });
+},2000)
 
 client.on('error', function (error) {
     console.error('MQTT error: ', error);

@@ -37,11 +37,11 @@ const validateRule = (rule) => {
 
   const room = rule.split('in ')[1];
 
-  if (!/^(temperature|distance|humidity|hour|season)$/i.test(sensor)) {
+  if (!/^(temperature|distance|humidity|hour|season|soil)$/i.test(sensor)) {
     return {
       statusCode: 400,
       message:
-        "Rule must contain one of theses sensor's parameters: temperature, distance, humidity,hour or season",
+        "Rule must contain one of theses sensor's parameters: temperature, distance, humidity, hour, soil or season",
     };
   }
 
@@ -180,7 +180,32 @@ const getAllRules = async () => {
 const updateRule = async (ruleId, updateFields) => {
 
   try {
-    const rule = updateFields?.rule || "";
+    let rule = updateFields?.rule || "";
+    if (rule.includes('season')) {
+      if (rule.includes('winter')) {
+        rule = rule.replace('winter', '1');
+      } else if (rule.includes('spring')) {
+        rule = rule.replace('spring', '2');
+      } else if (rule.includes('summer')) {
+        rule = rule.replace('summer', '3');
+      } else if (rule.includes('fall')) {
+        rule = rule.replace('fall', '4');
+      } else {
+        console.log('No specific condition matched.');
+      }
+    }
+
+    if (rule.includes('hour')) {
+      if (rule.includes('morning')) {
+        rule = rule.replace('morning', '1');
+      } else if (rule.includes('afternoon')) {
+        rule = rule.replace('afternoon', '2');
+      } else if (rule.includes('evening')) {
+        rule = rule.replace('evening', '3');
+      } else {
+        console.log('No specific condition matched.');
+      }
+    }
     if (rule !== "") {
       const ruleValidation = validateRule(rule);
       if (ruleValidation.statusCode === 400) {
@@ -189,6 +214,10 @@ const updateRule = async (ruleId, updateFields) => {
           message: ruleValidation.message,
         };
       }
+    }
+    updateFields = {
+      ...updateFields,
+      rule: rule
     }
     await Rule.updateOne({ id: ruleId }, { $set: updateFields });
     return {
