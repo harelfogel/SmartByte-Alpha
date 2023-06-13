@@ -5,6 +5,7 @@ const { switchAcState, analyzeFunc } = require("../api/sensibo");
 const {getRoomIdByRoomName} = require("../services/rooms.service");
 const {getDeviceIdByDeviceName, setRoomDeviceState} = require("../services/devices.service");
 const RoomDevice = require("../models/RoomDevice");
+const { controlPump } = require("../services/mqtt.service");
 
 
 const removeSensorValueByType = async (sensorType) => {
@@ -30,7 +31,9 @@ const getFunctionsFromDB = async () => {
 const activateDevices = async (func) => {
     const actionParsed = func.split(' ');
     const device = actionParsed[0];
-    const roomName = actionParsed[actionParsed.length - 1];
+    const roomName = actionParsed[actionParsed.length - 1] === 'room' ? 
+    actionParsed[actionParsed.length - 2] + ' ' + actionParsed[actionParsed.length - 1] :
+    actionParsed[actionParsed.length - 1];
     const roomId = await getRoomIdByRoomName(roomName);
     const deviceId = await getDeviceIdByDeviceName(device);
     const roomDeviceId = `${roomId}-${deviceId}`;
@@ -44,6 +47,7 @@ const activateDevices = async (func) => {
     setRoomDeviceState(roomDeviceId, state)
     const acPattern = /\b(ac)\b/;
     const heaterPattern = /\b(heater)\b/;
+    const pumpPattern = /\b(pump)\b/;
 
     try {
         let response;
@@ -52,6 +56,8 @@ const activateDevices = async (func) => {
             response = await analyzeFunc(func)
         } else if (heaterPattern.test(func)) {
             response = switchHeaterState(true);
+        } else if(pumpPattern.test(func)) {
+            response = controlPump('ON');
         }
 
         return response;

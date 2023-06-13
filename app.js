@@ -240,7 +240,7 @@ server.get('/soilMoisture', function (req, res) {
 
 server.post('/pump', function (req, res) {
   // Extract the state and duration from the request body
-  const { state, duration } = req.body;
+  const { state, duration = 0.05 } = req.body;
 
   // Convert duration from minutes to milliseconds
   const durationInMilliseconds = duration * 60 * 1000;
@@ -719,8 +719,8 @@ server.get('/devices/rooms/:deviceName', async (req, res) => {
 
 // setInterval(async() => {
 //     removeAllSensorValues();
-// //     await removeSensorValueByType('temperature');
-// //     await removeSensorValueByType('humidity');
+// // //     await removeSensorValueByType('temperature');
+// // //     await removeSensorValueByType('humidity');
 //     await parseSensorAndWriteToMongo();
 
 // }, 2000);
@@ -728,14 +728,14 @@ server.get('/devices/rooms/:deviceName', async (req, res) => {
 
 setInterval(async () => {
 
-  await getFunctionsFromDB();
+  // await getFunctionsFromDB();
 
   //   await removeSensorValueByType('temperature');
   //   await removeSensorValueByType('humidity');
   //   await removeSensorValueByType('hour')
   //   await removeSensorValueByType('season')
   //   await parseSensorAndWriteToMongo();
-}, 20 * 1000)
+}, 10 * 1000)
 
 
 
