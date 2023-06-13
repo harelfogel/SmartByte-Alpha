@@ -197,6 +197,7 @@ server.post("/rules/:id", async (req, res) => {
   const updateFields = { ...req.body };
   const id = req.params.id;
   const response = await updateRule(id, updateFields);
+  console.log("yovel", updateFields, id)
   return res.status(response.statusCode).send(response.message);
 });
 
