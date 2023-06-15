@@ -218,9 +218,10 @@ const getSuggestions = async () => {
 
 async function addSuggestionsToDatabase() {
   try {
+
     const latestSensorValues = await getLatestSensorValues();
     const { season, hour } = getCurrentSeasonAndHour();
-
+    
     const currentTemperature = latestSensorValues.temperature;
     const currentHumidity = latestSensorValues.humidity;
     const currentDistance = latestSensorValues.distance;
@@ -231,12 +232,12 @@ async function addSuggestionsToDatabase() {
       "heater_switch",
       "laundry_machine",
     ];
-
+    
     const numberPattern = /\d+/g;
     const currentTemperatureValue = currentTemperature.match(numberPattern);
     const currentHumidityValue = currentHumidity.match(numberPattern);
     const currentDistanceValue = currentDistance.match(numberPattern);
-
+    
     const evidence = {
       temperature: discretizeTemperature(parseFloat(currentTemperatureValue)),
       humidity: discretizeHumidity(parseFloat(currentHumidityValue)),
@@ -244,6 +245,8 @@ async function addSuggestionsToDatabase() {
       season: convertSeasonToNumber(season),
       hour: discretizeHour(hour)
     };
+    
+
 
     // Call the recommend_device function with the evidence
     const response = await axios.post(
