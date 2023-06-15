@@ -16,6 +16,8 @@ const removeSensorValueByType = async (sensorType) => {
     }
 }
 
+
+
 const getFunctionsFromDB = async () => {
     try {
         const functions = await Function.find();
@@ -36,6 +38,7 @@ const activateDevices = async (func) => {
     actionParsed[actionParsed.length - 1];
     const roomId = await getRoomIdByRoomName(roomName);
     const deviceId = await getDeviceIdByDeviceName(device);
+    console.log({roomId, deviceId})
     const roomDeviceId = `${roomId}-${deviceId}`;
     const roomDevice = await RoomDevice.find({id: roomDeviceId});
     if(roomDevice.length === 0) {

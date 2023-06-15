@@ -83,6 +83,16 @@ const mapSeason = (value) => {
 
 
 
+
+const createRegexPattern = (words) => {
+  let regexPattern = '^(' + words.join('|') + ')$';
+  const regex = new RegExp(regexPattern, 'i');
+return regex;
+}
+
+
+
+
 module.exports = {
   discretizeTemperature,
   discretizeDistance,
@@ -95,5 +105,6 @@ module.exports = {
   mapHumidity,
   mapSeason,
   mapTemperature,
-  checkIfHour
+  checkIfHour,
+  createRegexPattern
 }

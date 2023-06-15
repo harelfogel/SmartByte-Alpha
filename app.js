@@ -32,6 +32,8 @@ const {
   updateRule,
   deleteRuleById,
   checkIfRuleIsAlreadyExists,
+  operatorFormatter,
+  validateRule,
 } = require("./services/rules.service.js");
 const { switchHeaterState } = require("./api/heaterController.js");
 
@@ -91,6 +93,7 @@ connectDB();
 
 connectToWs();
 
+
 //simulateMotionSensor();
 // Simulate motion sensor every minute
 setInterval(simulateMotionSensor, 70 * 1000); // 60 * 1000 milliseconds = 1 minute
@@ -104,6 +107,7 @@ server.get("/", function (req, res) {
 server.post("/", function (req, res, next) {
   smartapp.handleHttpCallback(req, res);
 });
+
 
 // --------------------------------- Sign up----------------------------------
 server.post("/register", async (req, res) => {
