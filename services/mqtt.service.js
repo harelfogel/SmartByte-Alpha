@@ -12,15 +12,13 @@ const options = {
 // Create a client instance
 const client = mqtt.connect('mqtts://' + process.env.MQTT_URL, options);
 
-client.on('connect', function () {
+client.once('connect', function () {
     console.log('MQTT connected');
     client.subscribe('esp32/soilMoisture');
-
 });
 
 
 setInterval(() => {
-
     client.once('message', function (topic, message) {
         if (topic == 'esp32/soilMoisture') {
             // console.log(`Received soil moisture: ${message.toString()}`);
@@ -29,7 +27,7 @@ setInterval(() => {
     });
 },2000)
 
-client.on('error', function (error) {
+client.once('error', function (error) {
     console.error('MQTT error: ', error);
 });
 
