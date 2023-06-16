@@ -2,6 +2,9 @@ const Rule = require("../models/Rule");
 const { ObjectId } = require("bson");
 const { getSensors } = require("./sensors.service");
 const { createRegexPattern } = require("../utils/utils");
+const { getUsers } = require("./users.service");
+const _ = require("lodash");
+const { OPERATORS_MAP_FORMATTER, SEASONS_MAP_FORMATTER, HOURS_MAP_FORMATTER } = require("../consts/rules.consts");
 const checkForDevices = (rule) => {
   const devices = [];
   if (/\b(ac)\b/i.test(rule)) devices.push("ac");
@@ -14,7 +17,49 @@ const decideOnState = (rule) => {
   return /\b(off)\b/i.test(rule) ? "on" : "off";
 };
 
+
+const validateSensor = async (rule) => {
+  const parsedRule = rule.split(" ");
+  const usersResponse = await getUsers();
+  const users = usersResponse.data.map(({fullName}) => fullName.split(' ')[0]);
+
+  const sensorsResponse = await getSensors();
+  const sensors = sensorsResponse.map(({ name }) => name);
+
+
+  const sensorsFromRuleString = [];
+
+  parsedRule.forEach((word, idx) => {
+    if (word === 'AND' || word === 'IF') {
+      sensorsFromRuleString.push(parsedRule[idx + 1]);
+    }
+  })
+
+  let invalidSensor = null;
+
+  sensorsFromRuleString.forEach(sensor => {
+    if(!users.includes(sensor) && !sensors.includes(sensor)) {
+     invalidSensor = sensor;
+    }
+  })
+
+  if(invalidSensor) {
+    return {
+      statusCode: 400,
+      message: `We don't recognize ${invalidSensor}`
+    }
+  }
+
+  return {
+    statusCode: 200,
+    message: `All sensors are valid`
+  }
+  
+}
+
 const validateRule = async (rule) => {
+
+
   const parsedRule = rule.split(" ");
   if (parsedRule[0] !== "IF") {
     return {
@@ -29,12 +74,7 @@ const validateRule = async (rule) => {
     : /\b(=)\b/i.test(rule)
     ? "="
     : null;
-  // if (!operator) {
-  //     return {
-  //         statusCode: 400,
-  //         message: 'Rule must contain one of theses operators: <, >, ='
-  //     }
-  // }
+
   const sensor = parsedRule[1].split(operator)[0];
 
   const room = rule.split("in ")[1];
@@ -78,23 +118,55 @@ const validateRule = async (rule) => {
   };
 };
 
-const ruleFormatter = (rule) => {
-  console.log("RULE FORMATTER")
-  const operators = {
-    above: ">",
-    below: "<",
-    ["is not"]: "!=",
-    is: "==",
-  };
 
-  Object.entries(operators).forEach(operator => {
-    rule = rule.replace(operator[0], operator[1]);
+const replaceWords = (rule, map) => {
+  Object.entries(map).forEach(item => {
+    const regex = new RegExp(item[0], 'g');
+    rule = rule.replace(regex, item[1]);
   })
+  return rule;
+}
+
+
+const validateNormalizedRule = (rule) => {
+
+}
+
+const createUserDistanceMap = (users) => {
+  return users.reduce((map, user) => {
+    map[user] = `${user}_distance`;
+    return map;
+  }, {})
+
+
+  
+}
+
+const ruleFormatter = async (rule) => {
+
+
+
+  const usersResponse = await getUsers();
+  const users = usersResponse.data.map(({fullName}) => fullName.split(' ')[0]);
+  const usersMap = createUserDistanceMap(users);
+
+
+  const homeMap = {home: '0.001'}
+
+  // replace operator
+
+  rule = replaceWords(rule, OPERATORS_MAP_FORMATTER);
+  rule = replaceWords(rule, SEASONS_MAP_FORMATTER);
+  rule = replaceWords(rule, HOURS_MAP_FORMATTER);
+  rule = replaceWords(rule, usersMap);
+  rule = replaceWords(rule, homeMap);
+
 
 
   //add (" ")
   const index = rule.indexOf("TURN") + 4;
   rule = rule.slice(0, index) + `("` + rule.slice(index + 1,rule.length) + `")`;
+
   
   return rule;
 
@@ -102,41 +174,27 @@ const ruleFormatter = (rule) => {
 
 const insertRuleToDB = async (rule, isStrict) => {
   try {
-    rule = ruleFormatter(rule);
-    const ruleValidation = await validateRule(rule);
+    const formattedRule = await ruleFormatter(rule);
+    const ruleValidation = await validateRule(formattedRule);
+    const sensorsValidation = await validateSensor(rule);
+
+
+
+    if(sensorsValidation.statusCode === 400) {
+      return {
+        statusCode: sensorsValidation.statusCode,
+        message: sensorsValidation.message
+      }
+    }
+
     if (ruleValidation.statusCode === 400) {
       return {
         statusCode: ruleValidation.statusCode,
         message: ruleValidation.message,
       };
     }
-    if (rule.includes("season")) {
-      if (rule.includes("winter")) {
-        rule = rule.replace("winter", "1");
-      } else if (rule.includes("spring")) {
-        rule = rule.replace("spring", "2");
-      } else if (rule.includes("summer")) {
-        rule = rule.replace("summer", "3");
-      } else if (rule.includes("fall")) {
-        rule = rule.replace("fall", "4");
-      } else {
-        console.log("No specific condition matched.");
-      }
-    }
-
-    if (rule.includes("hour")) {
-      if (rule.includes("morning")) {
-        rule = rule.replace("morning", "1");
-      } else if (rule.includes("afternoon")) {
-        rule = rule.replace("afternoon", "2");
-      } else if (rule.includes("evening")) {
-        rule = rule.replace("evening", "3");
-      } else {
-        console.log("No specific condition matched.");
-      }
-    }
-    console.log({ isStrict });
-    const newRule = new Rule({ rule, isStrict });
+  
+    const newRule = new Rule({ rule: formattedRule, normalizedRule: rule, isStrict });
     newRule.id = Math.floor(10000000 + Math.random() * 90000000);
     await newRule.save();
 
@@ -168,31 +226,7 @@ const removeRuleFromDB = async (id) => {
   }
 };
 
-const backupokdInsertToDb = async (rule, isStrict) => {
-  try {
-    const devices = checkForDevices(rule);
 
-    let parserRule = rule.split("THEN");
-    const state = decideOnState(rule);
-
-    devices.map((device) => {
-      parserRule[0] = parserRule[0] + `AND ${device}==${state} `;
-    });
-    parserRule = parserRule.join("THEN");
-    const newRule = new Rule({ rule });
-    await newRule.save();
-
-    return {
-      statusCode: 200,
-      message: "Rule added successfully",
-    };
-  } catch (err) {
-    return {
-      statusCode: 500,
-      message: `Error adding rule - ${err}`,
-    };
-  }
-};
 
 const getAllRules = async () => {
   try {
@@ -211,45 +245,31 @@ const getAllRules = async () => {
 
 const updateRule = async (ruleId, updateFields) => {
   try {
-    let rule = updateFields?.rule || "";
-    if (rule.includes("season")) {
-      if (rule.includes("winter")) {
-        rule = rule.replace("winter", "1");
-      } else if (rule.includes("spring")) {
-        rule = rule.replace("spring", "2");
-      } else if (rule.includes("summer")) {
-        rule = rule.replace("summer", "3");
-      } else if (rule.includes("fall")) {
-        rule = rule.replace("fall", "4");
-      } else {
-        console.log("No specific condition matched.");
-      }
-    }
-
-    if (rule.includes("hour")) {
-      if (rule.includes("morning")) {
-        rule = rule.replace("morning", "1");
-      } else if (rule.includes("afternoon")) {
-        rule = rule.replace("afternoon", "2");
-      } else if (rule.includes("evening")) {
-        rule = rule.replace("evening", "3");
-      } else {
-        console.log("No specific condition matched.");
-      }
-    }
+    let rule = _.get(updateFields, 'rule', "");
     if (rule !== "") {
-      const ruleValidation = await validateRule(rule);
+      const formattedRule = await ruleFormatter(rule);
+      const ruleValidation = await validateRule(formattedRule);
+      const sensorsValidation = await validateSensor(rule);
+
+      if(sensorsValidation.statusCode === 400) {
+        return {
+          statusCode: sensorsValidation.statusCode,
+          message: sensorsValidation.message
+        }
+      }
+
       if (ruleValidation.statusCode === 400) {
         return {
           statusCode: ruleValidation.statusCode,
           message: ruleValidation.message,
         };
       }
+      updateFields = {
+        ...updateFields,
+        rule: formattedRule,
+        normalizedRule: rule
+      };
     }
-    updateFields = {
-      ...updateFields,
-      rule: rule,
-    };
     await Rule.updateOne({ id: ruleId }, { $set: updateFields });
     return {
       statusCode: 200,

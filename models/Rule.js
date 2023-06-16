@@ -5,6 +5,10 @@ const ruleSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  normalizedRule: {
+    type: String,
+    required: true
+  },
   isStrict: {
     type: Boolean,
     default: false
