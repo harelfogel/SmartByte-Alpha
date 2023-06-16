@@ -3,6 +3,8 @@ const { ObjectId } = require("bson");
 const { getSensors } = require("./sensors.service");
 const { createRegexPattern } = require("../utils/utils");
 const { getUsers } = require("./users.service");
+const _ = require("lodash");
+const { OPERATORS_MAP_FORMATTER, SEASONS_MAP_FORMATTER, HOURS_MAP_FORMATTER } = require("../consts/rules.consts");
 const checkForDevices = (rule) => {
   const devices = [];
   if (/\b(ac)\b/i.test(rule)) devices.push("ac");
@@ -152,29 +154,10 @@ const ruleFormatter = async (rule) => {
   const homeMap = {home: '0.001'}
 
   // replace operator
-  const operators = {
-    above: ">",
-    below: "<",
-    ["is not"]: "!=",
-    is: "==",
-  };
 
-  const seasons = {
-    winter: 1,
-    spring: 2,
-    summer: 3,
-    fall: 4
-  }
-
-  const hours = {
-    morning: 1,
-    afternoon: 2,
-    evening: 3
-  }
-
-  rule = replaceWords(rule, operators);
-  rule = replaceWords(rule, seasons);
-  rule = replaceWords(rule, hours);
+  rule = replaceWords(rule, OPERATORS_MAP_FORMATTER);
+  rule = replaceWords(rule, SEASONS_MAP_FORMATTER);
+  rule = replaceWords(rule, HOURS_MAP_FORMATTER);
   rule = replaceWords(rule, usersMap);
   rule = replaceWords(rule, homeMap);
 
@@ -262,45 +245,31 @@ const getAllRules = async () => {
 
 const updateRule = async (ruleId, updateFields) => {
   try {
-    let rule = updateFields?.rule || "";
-    if (rule.includes("season")) {
-      if (rule.includes("winter")) {
-        rule = rule.replace("winter", "1");
-      } else if (rule.includes("spring")) {
-        rule = rule.replace("spring", "2");
-      } else if (rule.includes("summer")) {
-        rule = rule.replace("summer", "3");
-      } else if (rule.includes("fall")) {
-        rule = rule.replace("fall", "4");
-      } else {
-        console.log("No specific condition matched.");
-      }
-    }
-
-    if (rule.includes("hour")) {
-      if (rule.includes("morning")) {
-        rule = rule.replace("morning", "1");
-      } else if (rule.includes("afternoon")) {
-        rule = rule.replace("afternoon", "2");
-      } else if (rule.includes("evening")) {
-        rule = rule.replace("evening", "3");
-      } else {
-        console.log("No specific condition matched.");
-      }
-    }
+    let rule = _.get(updateFields, 'rule', "");
     if (rule !== "") {
-      const ruleValidation = await validateRule(rule);
+      const formattedRule = await ruleFormatter(rule);
+      const ruleValidation = await validateRule(formattedRule);
+      const sensorsValidation = await validateSensor(rule);
+
+      if(sensorsValidation.statusCode === 400) {
+        return {
+          statusCode: sensorsValidation.statusCode,
+          message: sensorsValidation.message
+        }
+      }
+
       if (ruleValidation.statusCode === 400) {
         return {
           statusCode: ruleValidation.statusCode,
           message: ruleValidation.message,
         };
       }
+      updateFields = {
+        ...updateFields,
+        rule: formattedRule,
+        normalizedRule: rule
+      };
     }
-    updateFields = {
-      ...updateFields,
-      rule: rule,
-    };
     await Rule.updateOne({ id: ruleId }, { $set: updateFields });
     return {
       statusCode: 200,
