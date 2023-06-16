@@ -462,8 +462,9 @@ server.post("/smartthings/v2/devices/:deviceId/switch", async (req, res) => {
 // --------------------------------- Location ---------------------------------
 
 server.post("/location", async (req, res) => {
-  // console.log(req.body)
-  const distance = await checkforUserDistance(req.body.location);
+  const {location, user} = req.body;
+  const firstName = _.get(user, "fullName", '').split(' ')[0];
+  const distance = await checkforUserDistance(location, firstName);
   res.json({ distance });
 });
 // --------------------------------- Devices ---------------------------------

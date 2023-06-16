@@ -7,7 +7,7 @@ const returnDistanceBetween2Coordinates = (first, second) => {
 }
 
 
-const checkforUserDistance = async (userLocation) => {
+const checkforUserDistance = async (userLocation, userFirstName) => {
     const { lat, lng } = userLocation;
     const houseLocation = {
         lat: 32.0766887,
@@ -16,10 +16,10 @@ const checkforUserDistance = async (userLocation) => {
 
 
     const distance = returnDistanceBetween2Coordinates(userLocation, houseLocation);
-    const value = `VAR distance = ${distance.toFixed(8)}`;
+    const value = `VAR ${userFirstName}_distance = ${distance.toFixed(8)}`;
 
-    await removeSensorValueByType('distance');
-    const distanceDocument = new SensorValue({ value, sensor_type: 'distance' });
+    await removeSensorValueByType(`${userFirstName}_distance`);
+    const distanceDocument = new SensorValue({ value, sensor_type: `${userFirstName}_distance` });
     await Promise.all([distanceDocument.save()]);
     return distance;
 }

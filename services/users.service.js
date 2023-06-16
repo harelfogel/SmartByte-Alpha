@@ -37,8 +37,24 @@ const registerUser = async (fullName, email, password, role) => {
   return { status: 201, message: 'User created successfully' };
 };
 
+const getUsers = async () => {
+  try{
+    const users = await User.find();
+    return {
+      statusCode: 200,
+      data: users
+    }
+  } catch(err){
+    return {
+      statusCode: err.statusCode,
+      message: err.message
+    }
+  }
+}
+
 
 module.exports = {
   signInUser,
   registerUser,
+  getUsers
 };
