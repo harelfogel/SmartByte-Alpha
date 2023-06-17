@@ -8,7 +8,8 @@ const {
   discretizeHour,
   discretizeHumidity,
   discretizeTemperature,
-  checkIfHour
+  checkIfHour,
+  discretizSoil
 } = require("../utils/utils");
 const { clients } = require("../ws");
 const Rule = require("../models/Rule");
@@ -70,14 +71,14 @@ const calculateStats = (evidenceValues) => {
 
 const getActualEvidenceValue = async (strongestEvidence) => {
   const latestSensorValues = await getLatestSensorValues(); // Get the latest sensor values
-  const { season, hour } = getCurrentSeasonAndHour(); // Get the current season and hour
 
   const actualValues = {
     temperature: latestSensorValues.temperature,
     humidity: latestSensorValues.humidity,
     distance_from_house: latestSensorValues.distance,
-    season: season,
-    hour: hour,
+    season: latestSensorValues.season,
+    hour: latestSensorValues.hour,
+    soil: latestSensorValues.soil
   };
   return [actualValues[strongestEvidence.evidence]];
 };
@@ -120,9 +121,11 @@ const generateRule = async (suggestion) => {
     const operator = comparisonOperators[Math.floor(Math.random() * comparisonOperators.length)];
     
     const discretizedActualValue = discretizeValue(strongestEvidence.evidence, actualValue[0]); // <-- Added this line
+
     let value = mappedValue[discretizedActualValue.toString()];
     
     const currentCondition = `${current.evidence} ${comparisonOperators} ${value}`
+
     
     if(acc === ''){
       return currentCondition
@@ -181,6 +184,8 @@ const discretizeValue = (evidenceType, actualValue) => {
       return discretizeHour(actualValue);
     case 'season':
       return convertSeasonToNumber(actualValue);
+    case 'soil':
+      return discretizSoil(actualValue)
     default:
       return undefined;
   }
@@ -226,28 +231,43 @@ async function addSuggestionsToDatabase() {
     const currentTemperature = latestSensorValues.temperature;
     const currentHumidity = latestSensorValues.humidity;
     const currentDistance = latestSensorValues.distance;
+    const currentSoil = latestSensorValues.soil;
     const devices = [
       "lights",
       "fan",
       "ac_status",
       "heater_switch",
       "laundry_machine",
+      "pump"
     ];
     
     const numberPattern = /\d+/g;
     const currentTemperatureValue = currentTemperature.match(numberPattern);
     const currentHumidityValue = currentHumidity.match(numberPattern);
     const currentDistanceValue = currentDistance.match(numberPattern);
-    
+    const currentSoilValue = currentSoil.match(numberPattern);
+
     const evidence = {
       temperature: discretizeTemperature(parseFloat(currentTemperatureValue)),
       humidity: discretizeHumidity(parseFloat(currentHumidityValue)),
       distance_from_house: discretizeDistance(parseFloat(currentDistanceValue)),
       season: convertSeasonToNumber(season),
-      hour:  discretizeHour(hour)
+      hour:  discretizeHour(hour),
+      soil: discretizSoil(currentSoilValue[0])
     };
+
     
-    
+    // If there is no suggestions use this for pump
+    // const evidence = {
+    //   temperature: 3,
+    //   humidity: 1,
+    //   distance_from_house: 3,
+    //   season: 2,
+    //   hour:  2,
+    //   soil: 2
+    // };
+
+
     // Call the recommend_device function with the evidence
     const response = await axios.post(
       "http://127.0.0.1:5000/recommend_device",
@@ -283,8 +303,7 @@ async function addSuggestionsToDatabase() {
           average_duration: roundedValue,
           strongest_evidence: filteredEvidence,
           state: "on",
-        };
-       
+        };       
         const rule = await generateRule(suggestionData);
 
         // Check if a suggestion with the same rule already exists in the database

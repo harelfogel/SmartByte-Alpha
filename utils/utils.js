@@ -30,6 +30,11 @@ function discretizeHour(hour) {
   return 3;
 }
 
+function discretizSoil(soil) {
+  if (soil < 2200) return 1;
+  return 2;
+}
+
 function convertSeasonToNumber(season) {
   const seasonMapping = {
     'winter': 1,
@@ -106,5 +111,6 @@ module.exports = {
   mapSeason,
   mapTemperature,
   checkIfHour,
-  createRegexPattern
+  createRegexPattern,
+  discretizSoil
 }

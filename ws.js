@@ -7,7 +7,6 @@ const connectToWs = () => {
 
   wss.on("connection", (ws) => {
     clients.push(ws);
-    // console.log("Yovel", clients)
 
     // Send a JSON string instead of plain text
     // ws.send(JSON.stringify({ message: "Hello, client!" }));
