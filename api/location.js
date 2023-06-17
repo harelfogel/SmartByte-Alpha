@@ -17,10 +17,13 @@ const checkforUserDistance = async (userLocation, userFirstName) => {
 
     const distance = returnDistanceBetween2Coordinates(userLocation, houseLocation);
     const value = `VAR ${userFirstName}_distance = ${distance.toFixed(8)}`;
+    const tempValue = `VAR distance = ${distance.toFixed(8)}`;
 
     await removeSensorValueByType(`${userFirstName}_distance`);
+    await removeSensorValueByType(`distance`);
     const distanceDocument = new SensorValue({ value, sensor_type: `${userFirstName}_distance` });
-    await Promise.all([distanceDocument.save()]);
+    const distanceTempDocument = new SensorValue({ value: tempValue, sensor_type: `distance` });
+    await Promise.all([distanceDocument.save(), distanceTempDocument.save()]);
     return distance;
 }
 

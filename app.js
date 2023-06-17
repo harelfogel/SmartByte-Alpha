@@ -88,6 +88,10 @@ const { controlLED } = require("./services/mqtt.service.js");
 const mqttService = require("./services/mqtt.service.js");
 const { Server } = require("ws");
 
+
+
+
+
 // Connect to MongoDB
 connectDB();
 
@@ -704,13 +708,13 @@ server.get('/devices/rooms/:deviceName', async (req, res) => {
 })
 
 
-// setInterval(() => {
+// setInterval(async() => {
 
 
-//   addSuggestionsToDatabase();
+//  await addSuggestionsToDatabase();
 
 
-// },4000)
+// },1000)
 
 // Schedule the job to run at specific hours
 //schedule.scheduleJob("0 8,12,14,18,20 * * *", addSuggestionsToDatabase);
