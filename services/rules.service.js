@@ -172,11 +172,22 @@ const ruleFormatter = async (rule) => {
 
 };
 
+
+  const insertRuleToDBMiddleware = (rule, isStrict) => {
+    const forPattern = /\b(KEEP)\b/;
+    
+  }
+
+
+
 const insertRuleToDB = async (rule, isStrict) => {
   try {
+
     const formattedRule = await ruleFormatter(rule);
     const ruleValidation = await validateRule(formattedRule);
     const sensorsValidation = await validateSensor(rule);
+
+    console.log({formattedRule, rule})
 
 
 

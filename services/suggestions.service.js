@@ -109,6 +109,7 @@ const getStrongestEvidence = (evidence) => {
 const generateRule = async (suggestion) => {
   const { device, strongest_evidence, state, average_duration } = suggestion;
   // Get strongest evidence
+
   const strongestEvidence = getStrongestEvidence(strongest_evidence);
 
   const conditions = await strongest_evidence.reduce(async(accPromise, current) => {
@@ -243,11 +244,10 @@ async function addSuggestionsToDatabase() {
       humidity: discretizeHumidity(parseFloat(currentHumidityValue)),
       distance_from_house: discretizeDistance(parseFloat(currentDistanceValue)),
       season: convertSeasonToNumber(season),
-      hour: discretizeHour(hour)
+      hour:  discretizeHour(hour)
     };
     
-
-
+    
     // Call the recommend_device function with the evidence
     const response = await axios.post(
       "http://127.0.0.1:5000/recommend_device",
