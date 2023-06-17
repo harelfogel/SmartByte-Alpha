@@ -231,7 +231,6 @@ const getDeviceIdByDeviceName = async (deviceName) => {
 const getRoomsByDeviceName = async (deviceName) => {
   // get all rooms that has that device
   const roomsDevices = await RoomDevice.find({device_name: deviceName});
-  console.log("Yovel", roomsDevices);
   return roomsDevices;
 }
 

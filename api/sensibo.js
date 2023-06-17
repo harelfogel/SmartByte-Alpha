@@ -147,7 +147,7 @@ const parseSensorAndWriteToMongo = async () => {
     if (currentMonth >= 3 && currentMonth <= 5) {
       season = 2; // Spring
     } else if (currentMonth >= 6 && currentMonth <= 8) {
-      season = 2; // Summer
+      season = 3; // Summer
     } else if (currentMonth >= 9 && currentMonth <= 11) {
       season = 4; // Fall
     } else {
@@ -167,6 +167,14 @@ const parseSensorAndWriteToMongo = async () => {
       value: timeOfTheDayValue,
       sensor_type: "hour",
     });
+
+    // TODO make sure soil will write to database!!!!
+    // const currentSoil = getLatestSoilMoisture();
+    // const timeOfTheDayValue = `VAR Soil=${timeOfTheDay}`;
+    // const timeDocument = new SensorValue({
+    //   value: Soil,
+    //   sensor_type: "hour",
+    // });
 
     await Promise.all([temperatureDocument.save(), humidityDocument.save(), seasonDocument.save(), timeDocument.save()]);
 

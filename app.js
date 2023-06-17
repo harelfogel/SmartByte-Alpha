@@ -158,18 +158,6 @@ server.get("/user-role", (req, res) => {
   res.json({ role: "admin" }); // Replace 'admin' with the actual role based on your authentication logic
 });
 
-// --------------------------------- test yovel ---------------------------------
-server.post("/test", async (req, res) => {
-  let response;
-  try {
-    response = await activateDevices(req.body.func);
-    // console.log({response})
-    res.status(response.statusCode).json(response.data);
-  } catch (err) {
-    res.status(400).json(response.data);
-  }
-});
-
 // --------------------------------- Sensors ---------------------------------
 server.get("/sensors", async (req, res) => {
   try {
@@ -205,7 +193,6 @@ server.post("/rules/:id", async (req, res) => {
   const updateFields = { ...req.body };
   const id = req.params.id;
   const response = await updateRule(id, updateFields);
-  // console.log("yovel", updateFields, id)
   return res.status(response.statusCode).send(response.message);
 });
 
@@ -568,6 +555,7 @@ server.get("/recommend_device", async (req, res) => {
       "ac_status",
       "fan",
       "laundry_machine",
+      "pump"
     ];
     const { temperature, humidity, distance } = await getLatestSensorValues();
     const { season, hour } = getCurrentSeasonAndHour();
@@ -706,15 +694,14 @@ server.get('/devices/rooms/:deviceName', async (req, res) => {
 
   }
 })
+addSuggestionsToDatabase();
+
+setInterval(async() => {
+
+ await addSuggestionsToDatabase();
 
 
-// setInterval(async() => {
-
-
-//  await addSuggestionsToDatabase();
-
-
-// },1000)
+},4000)
 
 // Schedule the job to run at specific hours
 //schedule.scheduleJob("0 8,12,14,18,20 * * *", addSuggestionsToDatabase);
@@ -746,7 +733,6 @@ setInterval(async () => {
   //   await removeSensorValueByType('season')
   //   await parseSensorAndWriteToMongo();
 }, 10 * 1000)
-
 
 
 server.listen(port, () => console.log(`listening on port ${port}`));

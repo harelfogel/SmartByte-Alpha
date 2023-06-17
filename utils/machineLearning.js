@@ -87,7 +87,7 @@ async function callBayesianScript(requestData) {
 async function runBayesianScript() {
   console.log('Baysian Script is called!');
   try {
-    const devices = ["heater_switch", "lights", "ac_status", "fan", "laundry_machine"];
+    const devices = ["heater_switch", "lights", "ac_status", "fan", "laundry_machine", "pump"];
     const { temperature, humidity, distance } = await getLatestSensorValues();
     const { season, hour } = getCurrentSeasonAndHour();
     const requestData = {
@@ -114,9 +114,10 @@ async function addingDataToCsv() {
     const ac_status = devices[1].state;
     const heater_switch = devices[2].state
     const laundry_machine = devices[0].state
+    const pump = devices[5].state
     const { season } = getCurrentSeasonAndHour()
     const timestamp = getRoundedDate()
-    const { temperature, humidity, distance } = await getLatestSensorValues()
+    const { temperature, humidity, distance, soil } = await getLatestSensorValues()
 
     // random values
     const lights = getRandomOnOffValue()
@@ -131,6 +132,7 @@ async function addingDataToCsv() {
     const lights_duration = getRandomValue(30, 300, 1)
     const laundry_energy = getRandomValue(30, 100, 1)
     const laundry_duration = getRandomValue(30, 100, 1)
+    const pump_duration = 0.1
     const requestData = {
       timestamp,
       lights,
@@ -140,10 +142,12 @@ async function addingDataToCsv() {
       ac_mode,
       heater_switch,
       laundry_machine,
+      pump,
       temperature: extractValueFromString(temperature),
       humidity: extractValueFromString(humidity),
       distance: extractValueFromString(distance),
       season,
+      soil,
       ac_energy,
       ac_duration,
       heater_energy,
@@ -151,7 +155,8 @@ async function addingDataToCsv() {
       lights_energy,
       lights_duration,
       laundry_energy,
-      laundry_duration
+      laundry_duration,
+      pump_duration
     };
     try {
       const response = await axios.post('http://127.0.0.1:5000/update_data', {
