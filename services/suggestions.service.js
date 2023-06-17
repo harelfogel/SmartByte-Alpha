@@ -121,7 +121,6 @@ const generateRule = async (suggestion) => {
     const operator = comparisonOperators[Math.floor(Math.random() * comparisonOperators.length)];
     
     const discretizedActualValue = discretizeValue(strongestEvidence.evidence, actualValue[0]); // <-- Added this line
-    console.log({discretizedActualValue})
 
     let value = mappedValue[discretizedActualValue.toString()];
     
@@ -249,13 +248,25 @@ async function addSuggestionsToDatabase() {
     const currentSoilValue = currentSoil.match(numberPattern);
 
     const evidence = {
-      temperature: 3,
-      humidity: 1,
-      distance_from_house: 3,
-      season: 2,
-      hour:  2,
-      soil: 2
+      temperature: discretizeTemperature(parseFloat(currentTemperatureValue)),
+      humidity: discretizeHumidity(parseFloat(currentHumidityValue)),
+      distance_from_house: discretizeDistance(parseFloat(currentDistanceValue)),
+      season: convertSeasonToNumber(season),
+      hour:  discretizeHour(hour),
+      soil: discretizSoil(currentSoilValue[0])
     };
+
+    
+    // If there is no suggestions use this for pump
+    // const evidence = {
+    //   temperature: 3,
+    //   humidity: 1,
+    //   distance_from_house: 3,
+    //   season: 2,
+    //   hour:  2,
+    //   soil: 2
+    // };
+
 
     // Call the recommend_device function with the evidence
     const response = await axios.post(
@@ -294,7 +305,6 @@ async function addSuggestionsToDatabase() {
           state: "on",
         };       
         const rule = await generateRule(suggestionData);
-        console.log(rule)
 
         // Check if a suggestion with the same rule already exists in the database
         const existingSuggestion = await Suggestion.findOne({ rule: rule });
