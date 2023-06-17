@@ -694,14 +694,14 @@ server.get('/devices/rooms/:deviceName', async (req, res) => {
 
   }
 })
-addSuggestionsToDatabase();
+// addSuggestionsToDatabase();
 
-setInterval(async() => {
+// setInterval(async() => {
 
- await addSuggestionsToDatabase();
+//  await addSuggestionsToDatabase();
 
 
-},4000)
+// },4000)
 
 // Schedule the job to run at specific hours
 //schedule.scheduleJob("0 8,12,14,18,20 * * *", addSuggestionsToDatabase);
