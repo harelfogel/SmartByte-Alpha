@@ -69,32 +69,7 @@ const validateRule = async (rule) => {
       message: "Rule must start with IF",
     };
   }
-  const operator = /\b(<)\b/i.test(rule)
-    ? "<"
-    : /\b(>)\b/i.test(rule)
-    ? ">"
-    : /\b(=)\b/i.test(rule)
-    ? "="
-    : null;
 
-  const sensor = parsedRule[1].split(operator)[0];
-
-  const room = rule.split("in ")[1];
-
-  const sensorsResponse = await getSensors();
-  const sensors = sensorsResponse.map(({ name }) => name);
-
-  const sensorsRegex = createRegexPattern(sensors);
-
-  if (!sensorsRegex.test(sensor)) {
-    console.log("invalid RULE");
-    return {
-      statusCode: 400,
-      message: `Rule must contain one of theses sensor's parameters: ${sensors
-        .map((sensor) => sensor)
-        .join(", ")}.`,
-    };
-  }
 
   if (
     !/\b(kitchen|living room|dining room|bedroom|bathroom|bedroom)\b/i.test(
@@ -128,7 +103,6 @@ const replaceWords = (rule, map) => {
   return rule;
 };
 
-const validateNormalizedRule = (rule) => {};
 
 const createUserDistanceMap = (users) => {
   return users.reduce((map, user) => {
@@ -154,13 +128,12 @@ const ruleFormatter = async (rule) => {
   rule = replaceWords(rule, usersMap);
   rule = replaceWords(rule, homeMap);
 
-  console.log({ rule });
-
+  
   //add (" ")
   const index = rule.indexOf("TURN") + 4;
   rule =
-    rule.slice(0, index) + `("` + rule.slice(index + 1, rule.length) + `")`;
-
+  rule.slice(0, index) + `("` + rule.slice(index + 1, rule.length) + `")`;
+  
   return rule;
 };
 
@@ -169,8 +142,10 @@ const insertRuleToDBMiddleware = async (rule, isStrict) => {
   const isWithKeep = keepPattern.test(rule);
 
   if (!isWithKeep) {
+    console.log("GOOD")
     return await insertRuleToDB(rule, isStrict, false);
   } else {
+    console.log("NOT GOOD")
     const action = rule.split(" THEN KEEP ")[1];
     const conditions = rule.split(" THEN KEEP ")[0];
     const numberPattern = /\d+/g;
@@ -220,12 +195,13 @@ const insertRuleToDBMiddleware = async (rule, isStrict) => {
 };
 
 const insertRuleToDB = async (rule, isStrict, isHidden, relatedRule = null) => {
+  // console.log({rule})
   try {
     const formattedRule = await ruleFormatter(rule);
     const ruleValidation = await validateRule(formattedRule);
     const sensorsValidation = await validateSensor(rule);
 
-    console.log({ formattedRule, rule });
+    // console.log({ formattedRule, rule });
 
     if (sensorsValidation.statusCode === 400) {
       return {
