@@ -34,6 +34,9 @@ const {
   checkIfRuleIsAlreadyExists,
   operatorFormatter,
   validateRule,
+  insertRuleToDBMiddleware,
+  removeAllRules,
+  removeRuleFromDB,
 } = require("./services/rules.service.js");
 const { switchHeaterState } = require("./api/heaterController.js");
 
@@ -87,7 +90,6 @@ const { simulateMotionSensor } = require("./services/motion.service.js");
 const { controlLED } = require("./services/mqtt.service.js");
 const mqttService = require("./services/mqtt.service.js");
 const { Server } = require("ws");
-
 
 
 
@@ -183,8 +185,7 @@ server.get("/rules", async (req, res) => {
 server.post("/rules", async (req, res) => {
   const { rule, isStrict = false } = req.body;
   console.log({ rule, isStrict });
-  const response = await insertRuleToDB(rule, isStrict);
-  console.log("response", response.message);
+  const response = await insertRuleToDBMiddleware(rule, isStrict);
   res.status(response.statusCode).send(response.message);
 });
 
@@ -696,12 +697,16 @@ server.get('/devices/rooms/:deviceName', async (req, res) => {
 })
 // addSuggestionsToDatabase();
 
+// removeRuleFromDB("77021004")
+
+// insertRuleToDBMiddleware('IF season is summer THEN KEEP temperature on 25 in dining room')
+// removeAllRules();
 setInterval(async() => {
 
- await addSuggestionsToDatabase();
+//  await addSuggestionsToDatabase();
+// console.log("removed rules")
 
-
-},4000)
+},5000)
 
 // Schedule the job to run at specific hours
 //schedule.scheduleJob("0 8,12,14,18,20 * * *", addSuggestionsToDatabase);

@@ -20,8 +20,13 @@
     evening: 3
   }
 
+  const SENSOR_DEVICE_RELATION_MAP = {
+    temperature: 'ac'
+  }
+
   module.exports = {
     OPERATORS_MAP_FORMATTER,
     SEASONS_MAP_FORMATTER, 
-    HOURS_MAP_FORMATTER
+    HOURS_MAP_FORMATTER,
+    SENSOR_DEVICE_RELATION_MAP
   }
