@@ -20,6 +20,18 @@ const ruleSchema = new mongoose.Schema({
   id: {
     type: String,
     required: true
+  },
+  isHidden: {
+    type: Boolean,
+    default: false
+  },
+  relatedRule: {
+    type: String,
+    default: null
+  },
+  isUIOnly: {
+    type: Boolean,
+    defaulr: false
   }
 });
 
