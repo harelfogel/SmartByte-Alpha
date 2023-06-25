@@ -13,6 +13,7 @@ const SuggestionSchema = new mongoose.Schema({
   state: String,
   rule: String,
   is_new: Boolean,
+  normalized_rule: String,
 });
 
 const Suggestion = mongoose.model('suggestions', SuggestionSchema);

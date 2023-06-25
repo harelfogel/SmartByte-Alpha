@@ -9,10 +9,12 @@ const {
   discretizeHumidity,
   discretizeTemperature,
   checkIfHour,
-  discretizSoil
+  discretizSoil,
+  replaceWords
 } = require("../utils/utils");
 const { clients } = require("../ws");
 const Rule = require("../models/Rule");
+const { OPERATORS_FOTMATTER_TO_NORMALIZED } = require("../consts/suggestions.consts");
 
 const temperatureMap = {
   1: 15,
@@ -72,12 +74,14 @@ const calculateStats = (evidenceValues) => {
 const getActualEvidenceValue = async (strongestEvidence) => {
   const latestSensorValues = await getLatestSensorValues(); // Get the latest sensor values
 
+  const { season, hour } = getCurrentSeasonAndHour();
+
   const actualValues = {
     temperature: latestSensorValues.temperature,
     humidity: latestSensorValues.humidity,
     distance_from_house: latestSensorValues.distance,
-    season: latestSensorValues.season,
-    hour: latestSensorValues.hour,
+    season,
+    hour,
     soil: latestSensorValues.soil
   };
   return [actualValues[strongestEvidence.evidence]];
@@ -112,7 +116,7 @@ const generateRule = async (suggestion) => {
   // Get strongest evidence
 
   const strongestEvidence = getStrongestEvidence(strongest_evidence);
-
+  
   const conditions = await strongest_evidence.reduce(async(accPromise, current) => {
     const acc = await accPromise;
     const mappedValue = mapEvidenceValue(current.evidence);
@@ -120,7 +124,7 @@ const generateRule = async (suggestion) => {
     const comparisonOperators = getComparisonOperator(current.evidence, actualValue);
     const operator = comparisonOperators[Math.floor(Math.random() * comparisonOperators.length)];
     
-    const discretizedActualValue = discretizeValue(strongestEvidence.evidence, actualValue[0]); // <-- Added this line
+    const discretizedActualValue = discretizeValue(current.evidence, actualValue[0]); // <-- Added this line
 
     let value = mappedValue[discretizedActualValue.toString()];
     
@@ -140,6 +144,9 @@ const generateRule = async (suggestion) => {
     // value = checkIfHour(value)
     // const conditions = `${current.evidence} ${comparisonOperators} ${value}`;
   },'')
+
+  const normalizedConditions = replaceWords(conditions, OPERATORS_FOTMATTER_TO_NORMALIZED);
+  // console.log({normalizedConditions});
 
 
 
@@ -161,9 +168,12 @@ const generateRule = async (suggestion) => {
   value = checkIfHour(value)
   // const conditions = `${strongestEvidence.evidence} ${comparisonOperators} ${value}`;
   const action = `("${device.split('_')[0]} ${state} for ${average_duration} minutes")`;
+  const normalizedAction = `${device.split('_')[0]} ${state} for ${average_duration} minutes`;
   const generatedRule = `IF ${conditions} THEN TURN${action}`;
-  console.log({generatedRule})
-  return generatedRule;
+  const normalizedRule = `IF ${normalizedConditions} THEN TURN ${normalizedAction}`;
+  console.log({generatedRule,normalizedRule})
+  // console.log({generatedRule})
+  return {generatedRule, normalizedRule};
 };
 
 // Add this new function for discrretizing the actual value
@@ -192,25 +202,6 @@ const discretizeValue = (evidenceType, actualValue) => {
 };
 
 
-async function updateRulesForExistingSuggestions() {
-  try {
-    // Fetch suggestions without a 'rule' key
-    const suggestionsWithoutRule = await Suggestion.find({
-      rule: { $exists: false },
-    });
-
-    // Iterate through the suggestions and generate a rule for each
-    for (const suggestion of suggestionsWithoutRule) {
-      const rule = generateRule(suggestion); // Use the generateRule function to generate the rule
-      await Suggestion.updateOne(
-        { id: suggestion.id },  
-        { $set: { rule: rule } }
-      ); // Update the suggestion with the generated rule
-    }
-  } catch (error) {
-    console.error(`Error updating rules for existing suggestions: ${error}`);
-  }
-}
 
 const getSuggestions = async () => {
   try {
@@ -224,7 +215,6 @@ const getSuggestions = async () => {
 
 async function addSuggestionsToDatabase() {
   try {
-
     const latestSensorValues = await getLatestSensorValues();
     const { season, hour } = getCurrentSeasonAndHour();
     
@@ -277,38 +267,38 @@ async function addSuggestionsToDatabase() {
       } 
       );
       const recommendedDevices = response.data;
-    let strongestEvidence = [];
-    // Add the suggestions to the MongoDB database
-    for (const recommendedDevice of recommendedDevices) {
-      if (recommendedDevice.recommendation === "on") {
-        const deviceName = recommendedDevice.variables[0]; // Extract the device name from the variables array
-        let idx = 0;
-        for (const findStrongEvidence of recommendedDevice.strongest_evidence) {
-          strongestEvidence.push(findStrongEvidence);
-          if(idx === 1){
-            break;
+      let strongestEvidence = [];
+      // Add the suggestions to the MongoDB database
+      for (const recommendedDevice of recommendedDevices) {
+        if (recommendedDevice.recommendation === "on") {
+          const deviceName = recommendedDevice.variables[0]; // Extract the device name from the variables array
+          let idx = 0;
+          for (const findStrongEvidence of recommendedDevice.strongest_evidence) {
+            strongestEvidence.push(findStrongEvidence);
+            if(idx === 1){
+              break;
+            }
+            idx++;
           }
-          idx++;
-        }
-        const filteredEvidence = strongestEvidence.reduce((acc, curr) => {
-          const existingEvidence = acc.find(item => item.evidence === curr.evidence);
-          if(!existingEvidence) {
-            acc.push(curr);
-          }
-          return acc;
-        },[])
-        const roundedValue = Math.floor(recommendedDevice.average_duration);
-        const suggestionData = {
-          device: deviceName,
-          average_duration: roundedValue,
-          strongest_evidence: filteredEvidence,
-          state: "on",
-        };       
-        const rule = await generateRule(suggestionData);
+          const filteredEvidence = strongestEvidence.reduce((acc, curr) => {
+            const existingEvidence = acc.find(item => item.evidence === curr.evidence);
+            if(!existingEvidence) {
+              acc.push(curr);
+            }
+            return acc;
+          },[])
+          const roundedValue = Math.floor(recommendedDevice.average_duration);
+          const suggestionData = {
+            device: deviceName,
+            average_duration: roundedValue,
+            strongest_evidence: filteredEvidence,
+            state: "on",
+          };       
+          const {generatedRule, normalizedRule} = await generateRule(suggestionData);
 
         // Check if a suggestion with the same rule already exists in the database
-        const existingSuggestion = await Suggestion.findOne({ rule: rule });
-        const existingRule = await Rule.findOne({rule: rule})
+        const existingSuggestion = await Suggestion.findOne({ rule: generatedRule });
+        const existingRule = await Rule.findOne({rule: generatedRule});
         // If a suggestion with the same rule doesn't exist, save the new suggestion
         if (!existingSuggestion && !existingRule) {
           clients.forEach((client) => {
@@ -317,7 +307,8 @@ async function addSuggestionsToDatabase() {
           const suggestion = new Suggestion({
             id: Math.floor(10000000 + Math.random() * 90000000),
             ...suggestionData,
-            rule, // Add the rule property
+            rule: generatedRule, // Add the rule property
+            normalized_rule:normalizedRule,
             is_new: true,
           });
           await suggestion.save();
@@ -369,6 +360,5 @@ module.exports = {
   addSuggestionMenually,
   updateSuggestions,
   deleteSuggestion,
-  updateRulesForExistingSuggestions,
   generateRule
 }

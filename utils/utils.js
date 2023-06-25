@@ -97,6 +97,16 @@ return regex;
 
 
 
+const replaceWords = (rule, map) => {
+  Object.entries(map).forEach((item) => {
+    const regex = new RegExp(item[0], "g");
+    rule = rule.replace(regex, item[1]);
+  });
+  return rule;
+};
+
+
+
 
 module.exports = {
   discretizeTemperature,
@@ -112,5 +122,6 @@ module.exports = {
   mapTemperature,
   checkIfHour,
   createRegexPattern,
-  discretizSoil
+  discretizSoil,
+  replaceWords
 }
