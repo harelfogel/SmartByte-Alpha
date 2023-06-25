@@ -1,7 +1,7 @@
 const Rule = require("../models/Rule");
 const { ObjectId } = require("bson");
 const { getSensors } = require("./sensors.service");
-const { createRegexPattern } = require("../utils/utils");
+const { createRegexPattern, replaceWords } = require("../utils/utils");
 const { getUsers } = require("./users.service");
 const _ = require("lodash");
 const {
@@ -93,14 +93,6 @@ const validateRule = async (rule) => {
     statusCode: 200,
     message: "Rule  validated successfully",
   };
-};
-
-const replaceWords = (rule, map) => {
-  Object.entries(map).forEach((item) => {
-    const regex = new RegExp(item[0], "g");
-    rule = rule.replace(regex, item[1]);
-  });
-  return rule;
 };
 
 

@@ -46,7 +46,6 @@ const {
   updateSuggestions,
   addSuggestionMenually,
   deleteSuggestion,
-  updateRulesForExistingSuggestions,
 } = require("./services/suggestions.service.js");
 const {
   getDevices,
