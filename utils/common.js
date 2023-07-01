@@ -2,8 +2,8 @@ const { default: axios } = require("axios");
 const Function = require("../models/Function");
 const SensorValue = require("../models/SensorValue");
 const { switchAcState, analyzeFunc } = require("../api/sensibo");
-const {getRoomIdByRoomName} = require("../services/rooms.service");
-const {getDeviceIdByDeviceName, setRoomDeviceState} = require("../services/devices.service");
+const { getRoomIdByRoomName } = require("../services/rooms.service");
+const { getDeviceIdByDeviceName, setRoomDeviceState } = require("../services/devices.service");
 const RoomDevice = require("../models/RoomDevice");
 const { controlPump } = require("../services/mqtt.service");
 
@@ -33,14 +33,14 @@ const getFunctionsFromDB = async () => {
 const activateDevices = async (func) => {
     const actionParsed = func.split(' ');
     const device = actionParsed[0];
-    const roomName = actionParsed[actionParsed.length - 1] === 'room' ? 
-    actionParsed[actionParsed.length - 2] + ' ' + actionParsed[actionParsed.length - 1] :
-    actionParsed[actionParsed.length - 1];
+    const roomName = actionParsed[actionParsed.length - 1] === 'room' ?
+        actionParsed[actionParsed.length - 2] + ' ' + actionParsed[actionParsed.length - 1] :
+        actionParsed[actionParsed.length - 1];
     const roomId = await getRoomIdByRoomName(roomName);
     const deviceId = await getDeviceIdByDeviceName(device);
     const roomDeviceId = `${roomId}-${deviceId}`;
-    const roomDevice = await RoomDevice.find({id: roomDeviceId});
-    if(roomDevice.length === 0) {
+    const roomDevice = await RoomDevice.find({ id: roomDeviceId });
+    if (roomDevice.length === 0) {
         console.log(`There is no ${device} in ${roomName}`)
         return `There is no ${device} in ${roomName}`;
     }
@@ -58,7 +58,7 @@ const activateDevices = async (func) => {
             response = await analyzeFunc(func)
         } else if (heaterPattern.test(func)) {
             response = switchHeaterState(true);
-        } else if(pumpPattern.test(func)) {
+        } else if (pumpPattern.test(func)) {
             response = controlPump('ON');
         }
 

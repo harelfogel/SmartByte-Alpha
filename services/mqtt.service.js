@@ -1,4 +1,5 @@
 const mqtt = require('mqtt');
+const { clients: uiClients } = require("../ws");
 require('dotenv').config();
 
 let latestSoilMoisture = null;
@@ -25,7 +26,7 @@ setInterval(() => {
             latestSoilMoisture = message.toString();
         }
     });
-},2000)
+}, 2000)
 
 client.once('error', function (error) {
     console.error('MQTT error: ', error);
@@ -52,6 +53,10 @@ function controlPump(state) {
     const message = state;
 
     console.log(`Sending message: ${message} to topic: ${topic}`);  // Add this line
+
+    uiClients.forEach((client) => {
+        client.send("TEST PUMP");
+    });
 
     client.publish(topic, message, function (err) {
         if (err) {
