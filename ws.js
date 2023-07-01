@@ -7,16 +7,17 @@ const connectToWs = () => {
 
   wss.on("connection", (ws) => {
     clients.push(ws);
-
-    // Send a JSON string instead of plain text
-    // ws.send(JSON.stringify({ message: "Hello, client!" }));
     ws.send('Welcome to the WebSocket Server!');
+
+    // Send a message to all connected clients
+    wss.clients.forEach((client) => {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send('Hello, client!');
+      }
+    });
   });
 
-  wss.clients.forEach((client) => {
-    client.send('Hello, client!');
-});
-console.log("ws connected")
+  console.log("ws connected")
 };
 
 module.exports = { connectToWs, clients };

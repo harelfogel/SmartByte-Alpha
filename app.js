@@ -453,7 +453,7 @@ server.post("/smartthings/v2/devices/:deviceId/switch", async (req, res) => {
 // --------------------------------- Location ---------------------------------
 
 server.post("/location", async (req, res) => {
-  const {location, user} = req.body;
+  const { location, user } = req.body;
   const firstName = _.get(user, "fullName", '').split(' ')[0];
   const distance = await checkforUserDistance(location, firstName);
   res.json({ distance });
@@ -674,12 +674,12 @@ server.get("/rooms-name/:name", async (req, res) => {
 })
 
 server.get("/rooms/devices/:roomId", async (req, res) => {
-  try{
+  try {
 
     const roomId = req.params.roomId;
     const response = await getRoomDevices(roomId);
     return res.status(200).send(response.data)
-  } catch(err){
+  } catch (err) {
 
   }
 })
@@ -687,7 +687,7 @@ server.get("/rooms/devices/:roomId", async (req, res) => {
 
 server.post("/test", async (req, res) => {
   try {
- await addSuggestionsToDatabase();
+    await addSuggestionsToDatabase();
     return res.status(200);
   } catch (err) {
     // return res.status(400).send({ message: err.message });
@@ -695,12 +695,12 @@ server.post("/test", async (req, res) => {
 })
 
 server.get('/devices/rooms/:deviceName', async (req, res) => {
-  try{
+  try {
 
     const deviceName = req.params.deviceName;
     const response = await getRoomsByDeviceName(deviceName);
     return res.status(200).send(response);
-  }catch(err){
+  } catch (err) {
 
   }
 })
@@ -727,7 +727,7 @@ server.get('/devices/rooms/:deviceName', async (req, res) => {
 //     removeAllSensorValues();
 // // //     await removeSensorValueByType('temperature');
 // // //     await removeSensorValueByType('humidity');
-    // await parseSensorAndWriteToMongo();
+// await parseSensorAndWriteToMongo();
 
 // }, 2000);
 
@@ -735,16 +735,16 @@ server.get('/devices/rooms/:deviceName', async (req, res) => {
 
 
 setInterval(async () => {
-//  await addSuggestionsToDatabase();
+  //  await addSuggestionsToDatabase();
 
-  // await getFunctionsFromDB();
+  await getFunctionsFromDB();
 
   //   await removeSensorValueByType('temperature');
   //   await removeSensorValueByType('humidity');
   //   await removeSensorValueByType('hour')
   //   await removeSensorValueByType('season')
   //   await parseSensorAndWriteToMongo();
-}, 5 * 1000)
+}, 10 * 1000)
 
 
 server.listen(port, () => console.log(`listening on port ${port}`));
