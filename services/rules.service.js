@@ -125,7 +125,6 @@ const ruleFormatter = async (rule) => {
   const index = rule.indexOf("TURN") + 4;
   rule =
   rule.slice(0, index) + `("` + rule.slice(index + 1, rule.length) + `")`;
-  
   return rule;
 };
 
@@ -169,7 +168,7 @@ const insertRuleToDBMiddleware = async (rule, isStrict) => {
       normalizedRule: rule,
       isStrict,
       isHidden: false,
-      isUIOnly: true,
+      isUIOnly: true, 
     });
     const ruleId = Math.floor(10000000 + Math.random() * 90000000);
     newRule.id = ruleId;
