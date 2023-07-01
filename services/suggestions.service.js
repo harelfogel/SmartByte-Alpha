@@ -45,7 +45,7 @@ const getComparisonOperator = (evidence, evidenceValues) => {
   // Determine which comparison operator to use based on the median
   let chosenOperator;
   if (evidence === 'season' || evidence === 'hour') {
-    if (stats.median === stats.mode) {
+    if (stats.median === stats.mean) {
       chosenOperator = "==";
     } else {
       chosenOperator = "!=";
@@ -116,12 +116,11 @@ const generateRule = async (suggestion) => {
   // Get strongest evidence
 
   const strongestEvidence = getStrongestEvidence(strongest_evidence);
-  
   const conditions = await strongest_evidence.reduce(async(accPromise, current) => {
     const acc = await accPromise;
     const mappedValue = mapEvidenceValue(current.evidence);
     const actualValue = await getActualEvidenceValue(current);
-    const comparisonOperators = getComparisonOperator(current.evidence, actualValue);
+    const comparisonOperators = getComparisonOperator(current.evidence, [current.value]);
     const operator = comparisonOperators[Math.floor(Math.random() * comparisonOperators.length)];
     
     const discretizedActualValue = discretizeValue(current.evidence, actualValue[0]); // <-- Added this line
@@ -129,7 +128,6 @@ const generateRule = async (suggestion) => {
     let value = mappedValue[discretizedActualValue.toString()];
     
     const currentCondition = `${current.evidence} ${comparisonOperators} ${value}`
-
     
     if(acc === ''){
       return currentCondition
@@ -205,7 +203,7 @@ const discretizeValue = (evidenceType, actualValue) => {
 
 const getSuggestions = async () => {
   try {
-    const suggestions = await Suggestion.find();
+    const suggestions = await Suggestion.find().sort({_id: -1});
     return { statusCode: 200, data: suggestions };
   } catch (error) {
     console.error(`Error getting suggestions: ${error}`);
@@ -215,6 +213,7 @@ const getSuggestions = async () => {
 
 async function addSuggestionsToDatabase() {
   try {
+    console.log("ADD SUGG")
     const latestSensorValues = await getLatestSensorValues();
     const { season, hour } = getCurrentSeasonAndHour();
     
@@ -238,12 +237,12 @@ async function addSuggestionsToDatabase() {
     const currentSoilValue = currentSoil.match(numberPattern);
 
     const evidence = {
-      temperature: discretizeTemperature(parseFloat(currentTemperatureValue)),
-      humidity: discretizeHumidity(parseFloat(currentHumidityValue)),
-      distance_from_house: discretizeDistance(parseFloat(currentDistanceValue)),
-      season: convertSeasonToNumber(season),
-      hour:  discretizeHour(hour),
-      soil: discretizSoil(currentSoilValue[0])
+      temperature: 2,
+      humidity: 1,
+      distance_from_house: 1,
+      season: 2,
+      hour:  3,
+      soil: 2
     };
 
     
@@ -257,7 +256,17 @@ async function addSuggestionsToDatabase() {
     //   soil: 2
     // };
 
+    // If there is no suggestions use this for many devices
+    // const evidence = {
+    //   temperature: 2,
+    //   humidity: 1,
+    //   distance_from_house: 1,
+    //   season: 2,
+    //   hour:  3,
+    //   soil: 2
+    // };
 
+    
     // Call the recommend_device function with the evidence
     const response = await axios.post(
       "http://127.0.0.1:5000/recommend_device",

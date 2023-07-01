@@ -684,6 +684,16 @@ server.get("/rooms/devices/:roomId", async (req, res) => {
   }
 })
 
+
+server.post("/test", async (req, res) => {
+  try {
+ await addSuggestionsToDatabase();
+    return res.status(200);
+  } catch (err) {
+    // return res.status(400).send({ message: err.message });
+  }
+})
+
 server.get('/devices/rooms/:deviceName', async (req, res) => {
   try{
 
@@ -696,16 +706,11 @@ server.get('/devices/rooms/:deviceName', async (req, res) => {
 })
 // addSuggestionsToDatabase();
 
-// removeRuleFromDB("77021004")
 
-// insertRuleToDBMiddleware('IF season is summer THEN KEEP temperature on 25 in dining room')
-// removeAllRules();
-setInterval(async() => {
 
 //  await addSuggestionsToDatabase();
-// console.log("removed rules")
 
-},5000)
+// },5000)
 
 // Schedule the job to run at specific hours
 //schedule.scheduleJob("0 8,12,14,18,20 * * *", addSuggestionsToDatabase);
@@ -722,12 +727,15 @@ setInterval(async() => {
 //     removeAllSensorValues();
 // // //     await removeSensorValueByType('temperature');
 // // //     await removeSensorValueByType('humidity');
-//     await parseSensorAndWriteToMongo();
+    // await parseSensorAndWriteToMongo();
 
 // }, 2000);
 
 
+
+
 setInterval(async () => {
+//  await addSuggestionsToDatabase();
 
   // await getFunctionsFromDB();
 
@@ -736,7 +744,7 @@ setInterval(async () => {
   //   await removeSensorValueByType('hour')
   //   await removeSensorValueByType('season')
   //   await parseSensorAndWriteToMongo();
-}, 10 * 1000)
+}, 5 * 1000)
 
 
 server.listen(port, () => console.log(`listening on port ${port}`));
