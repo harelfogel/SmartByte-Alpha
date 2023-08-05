@@ -13,6 +13,7 @@ const options = {
 // Create a client instance
 const client = mqtt.connect('mqtts://' + process.env.MQTT_URL, options);
 
+
 client.once('connect', function () {
     console.log('MQTT connected');
     client.subscribe('esp32/soilMoisture');

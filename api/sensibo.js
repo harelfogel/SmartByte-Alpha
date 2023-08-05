@@ -3,7 +3,8 @@ const Device = require("../models/Device");
 const { updateDeviceModeInDatabase } = require("../services/devices.service");
 const { addingDataToCsv } = require("../utils/machineLearning.js");
 const SensorValue = require("../models/SensorValue");
-const { classifyHour } = require("../utils/machineLearning")
+const { getSeasonNumberByMonth, discretizeHour } = require("../utils/utils");
+const { SENSORS } = require("../consts/common.consts");
 
 
 const test = 0;
@@ -134,38 +135,29 @@ const parseSensorAndWriteToMongo = async () => {
     const humidityValue = `VAR humidity=${humidity.toFixed(1)}`;
     const temperatureDocument = new SensorValue({
       value: temperatureValue,
-      sensor_type: "temperature",
+      sensor_type: SENSORS.TEMPERATURE,
     });
     const humidityDocument = new SensorValue({
       value: humidityValue,
-      sensor_type: "humidity",
+      sensor_type: SENSORS.HUMIDITY,
     });
 
     const currentDate = new Date();
     const currentMonth = currentDate.getMonth() + 1; // January is month 0, so we add 1 to get the correct month number
-    let season = '';
-    if (currentMonth >= 3 && currentMonth <= 5) {
-      season = 2; // Spring
-    } else if (currentMonth >= 6 && currentMonth <= 8) {
-      season = 3; // Summer
-    } else if (currentMonth >= 9 && currentMonth <= 11) {
-      season = 4; // Fall
-    } else {
-      season = 1; // Winter
-    }
+    const season = getSeasonNumberByMonth(currentMonth);
 
     const seasonValue = `VAR season=${season}`;
     const seasonDocument = new SensorValue({
       value: seasonValue,
-      sensor_type: "season",
+      sensor_type: SENSORS.SEASON,
     });
 
     const currentHour = currentDate.getHours();
-    let timeOfTheDay = classifyHour(currentHour)
+    let timeOfTheDay = discretizeHour(currentHour);
     const timeOfTheDayValue = `VAR hour=${timeOfTheDay}`;
     const timeDocument = new SensorValue({
       value: timeOfTheDayValue,
-      sensor_type: "hour",
+      sensor_type: SENSORS.HOUR,
     });
 
     // TODO make sure soil will write to database!!!!
@@ -184,13 +176,6 @@ const parseSensorAndWriteToMongo = async () => {
   }
 };
 
-const removeAllSensorValues = async () => {
-  try {
-    const result = await SensorValue.deleteMany({});
-  } catch (error) {
-    console.error(error);
-  }
-};
 
 const updateAcMode = async (mode) => {
   try {
@@ -235,7 +220,6 @@ module.exports = {
   getAcState,
   getSensiboSensors,
   parseSensorAndWriteToMongo,
-  removeAllSensorValues,
   analyzeFunc,
   updateAcMode,
   updateSensiboMode,

@@ -90,9 +90,12 @@ const switchHeaterState = async (state) => {
 
 }
 
+
+
+
 module.exports = {
     removeSensorValueByType,
     getFunctionsFromDB,
     getHeaterState,
-    activateDevices
+    activateDevices,
 }

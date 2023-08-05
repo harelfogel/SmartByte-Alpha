@@ -1,3 +1,5 @@
+const { SENSORS, SEASONS, DAY_TIME } = require("../consts/common.consts");
+
 const discretizeTemperature = (temperature) => {
   if (temperature <= 15) {
     return 1;
@@ -37,56 +39,21 @@ function discretizSoil(soil) {
 
 function convertSeasonToNumber(season) {
   const seasonMapping = {
-    'winter': 1,
-    'spring': 2,
-    'summer': 3,
-    'fall': 4
+    [SEASONS.WINTER]: 1,
+    [SEASONS.SPRING]: 2,
+    [SEASONS.SUMMER]: 3,
+    [SEASONS.FALL]: 4
   };
   return seasonMapping[season];
 }
 
 
-const mapHour = (value) => {
-  if (value === 1) return 'morning (before 12 PM)';
-  if (value === 2) return 'afternoon (12 PM - 6 PM)';
-  return 'evening (after 6 PM)';
-};
-
-const mapTemperature = (value) => {
-  if (value === 1) return 'below 15°C';
-  if (value === 2) return '15-20°C';
-  if (value === 3) return '20-27°C';
-  return 'above 27°C';
-};
-
 const checkIfHour = (value) => {
-  if (value === "morning") return 1;
-  if (value === 'afternoon') return 2;
-  if (value === 'evening') return 3;
+  if (value === DAY_TIME.MORNING) return 1;
+  if (value === DAY_TIME.AFTERNOON) return 2;
+  if (value === DAY_TIME.EVENING) return 3;
   else return value;
 }
-
-const mapHumidity = (value) => {
-  if (value === 1) return 'below 30%';
-  if (value === 2) return '30-60%';
-  if (value === 3) return '60-90%';
-  return 'above 90%';
-};
-
-const mapDistance = (value) => {
-  if (value === 1) return 'below or equal to 0.01 units';
-  if (value === 2) return '0.01-20 units';
-  return 'above 20 units';
-};
-
-const mapSeason = (value) => {
-  if (value === 1) return 'winter';
-  if (value === 2) return 'spring';
-  if (value === 3) return 'summer';
-  return 'fall';
-};
-
-
 
 
 const createRegexPattern = (words) => {
@@ -106,6 +73,37 @@ const replaceWords = (rule, map) => {
 };
 
 
+const DISCRETIZE_SENSORS_MAP = {
+  [SENSORS.TEMPERATURE]: discretizeTemperature,
+  [SENSORS.HUMIDITY]: discretizeHumidity,
+  [SENSORS.HOUR]: discretizeHour,
+  [SENSORS.SOIL]: discretizSoil,
+  [SENSORS.DISTANCE]: discretizeDistance,
+  [SENSORS.SEASON]: convertSeasonToNumber,
+}
+
+
+const UNDISCRETIZE_SENSORS_MAP = {
+  [SENSORS.HOUR]: { 1: "morning", 2: "afternoon", 3: "evening" },
+  [SENSORS.TEMPERATURE]: { 1: 15, 2: 20, 3: 25, 4: 27 },
+  [SENSORS.HUMIDITY]: { 1: 30, 2: 60, 3: 90, 4: 100 },
+  [SENSORS.DISTANCE]: { 1: 0.01, 2: 20, 3: 100 },
+  [SENSORS.SEASON]: { 1: "winter", 2: "spring", 3: "summer", 4: "fall" },
+};
+
+const getSeasonNumberByMonth = (currentMonth) =>{
+  if (currentMonth >= 3 && currentMonth <= 5) {
+    return 2; // Spring
+  } else if (currentMonth >= 6 && currentMonth <= 8) {
+    return 3; // Summer
+  } else if (currentMonth >= 9 && currentMonth <= 11) {
+    return 4; // Fall
+  } else {
+    return 1; // Winter
+  }
+
+  
+}
 
 
 module.exports = {
@@ -115,13 +113,12 @@ module.exports = {
   discretizeHour,
   discretizeHumidity,
   convertSeasonToNumber,
-  mapHour,
-  mapDistance,
-  mapHumidity,
-  mapSeason,
-  mapTemperature,
   checkIfHour,
   createRegexPattern,
   discretizSoil,
-  replaceWords
+  replaceWords,
+  DISCRETIZE_SENSORS_MAP,
+  UNDISCRETIZE_SENSORS_MAP,
+  getSeasonNumberByMonth,
+  
 }

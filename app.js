@@ -8,7 +8,6 @@ const {
   getAcState,
   getSensiboSensors,
   parseSensorAndWriteToMongo,
-  removeAllSensorValues,
   updateAcMode,
   updateSensiboMode,
   analyzeFunc,
@@ -25,6 +24,7 @@ const {
   getFunctionsFromDB,
   getHeaterState,
   activateDevices,
+  ML_DEVICES,
 } = require("./utils/common.js");
 const {
   insertRuleToDB,
@@ -71,7 +71,7 @@ const axios = require("axios");
 const schedule = require("node-schedule");
 const { toggleLaundry } = require("./api/smartThings.js");
 const { connectToWs } = require("./ws.js");
-const { getLatestSensorValues } = require("./services/sensorValues.service.js");
+const { getLatestSensorValues, removeAllSensorValues } = require("./services/sensorValues.service.js");
 const { detectMotion } = require("./services/motion.service.js");
 const { response } = require("express");
 const Device = require("./models/Device.js");
@@ -89,6 +89,8 @@ const { simulateMotionSensor } = require("./services/motion.service.js");
 const { controlLED } = require("./services/mqtt.service.js");
 const mqttService = require("./services/mqtt.service.js");
 const { Server } = require("ws");
+
+
 
 
 
@@ -154,9 +156,8 @@ server.post("/notifyadmin", async (req, res) => {
 
 // --------------------------------- user roles ---------------------------------
 
-// server-side code (Node.js)
 server.get("/user-role", (req, res) => {
-  res.json({ role: "admin" }); // Replace 'admin' with the actual role based on your authentication logic
+  res.json({ role: "admin" }); 
 });
 
 // --------------------------------- Sensors ---------------------------------
@@ -548,15 +549,9 @@ server.get("/update_data", async (req, res) => {
 
 // --------------------------------- Machine Learnign-Recoomnadations ---------------------------------
 server.get("/recommend_device", async (req, res) => {
+  
   try {
-    const devices = [
-      "heater_switch",
-      "lights",
-      "ac_status",
-      "fan",
-      "laundry_machine",
-      "pump"
-    ];
+    const devices = Object.values(ML_DEVICES);
     const { temperature, humidity, distance } = await getLatestSensorValues();
     const { season, hour } = getCurrentSeasonAndHour();
     const requestData = {
@@ -731,7 +726,9 @@ server.get('/devices/rooms/:deviceName', async (req, res) => {
 
 // }, 2000);
 
-
+setTimeout(async() => {
+  getCurrentSeasonAndHour();
+}, 2000)
 
 
 setInterval(async () => {
@@ -743,7 +740,7 @@ setInterval(async () => {
   //   await removeSensorValueByType('humidity');
   //   await removeSensorValueByType('hour')
   //   await removeSensorValueByType('season')
-  //   await parseSensorAndWriteToMongo();
+    // await parseSensorAndWriteToMongo();
 }, 10 * 1000)
 
 
