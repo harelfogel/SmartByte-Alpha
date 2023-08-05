@@ -4,8 +4,8 @@ const { getCurrentSeasonAndHour } = require("../services/time.service");
 require("dotenv").config();
 const { getDevices } = require("../services/devices.service.js");
 const { DateTime } = require("luxon");
-const { SENSORS, ML_DEVICES } = require("./common");
 const { DISCRETIZE_SENSORS_MAP } = require("./utils");
+const { SENSORS, ML_DEVICES } = require("../consts/common.consts");
 
 
 async function callBayesianScript(requestData) {

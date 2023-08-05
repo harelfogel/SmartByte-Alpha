@@ -551,14 +551,7 @@ server.get("/update_data", async (req, res) => {
 server.get("/recommend_device", async (req, res) => {
   
   try {
-    const devices = [
-      ML_DEVICES.LIGHTS,
-      ML_DEVICES.FAN,
-      ML_DEVICES.AC_STATUS,
-      ML_DEVICES.HEATER_SWITCH,
-      ML_DEVICES.LAUNDRY_MATCHINE,
-      ML_DEVICES.PUMP
-    ];
+    const devices = Object.values(ML_DEVICES);
     const { temperature, humidity, distance } = await getLatestSensorValues();
     const { season, hour } = getCurrentSeasonAndHour();
     const requestData = {
@@ -734,7 +727,7 @@ server.get('/devices/rooms/:deviceName', async (req, res) => {
 // }, 2000);
 
 setTimeout(async() => {
-  // parseSensorAndWriteToMongo()
+  getCurrentSeasonAndHour();
 }, 2000)
 
 

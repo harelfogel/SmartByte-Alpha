@@ -1,4 +1,4 @@
-// const { SENSORS } = require("./common");
+const { SENSORS, SEASONS, DAY_TIME } = require("../consts/common.consts");
 
 const discretizeTemperature = (temperature) => {
   if (temperature <= 15) {
@@ -39,19 +39,19 @@ function discretizSoil(soil) {
 
 function convertSeasonToNumber(season) {
   const seasonMapping = {
-    'winter': 1,
-    'spring': 2,
-    'summer': 3,
-    'fall': 4
+    [SEASONS.WINTER]: 1,
+    [SEASONS.SPRING]: 2,
+    [SEASONS.SUMMER]: 3,
+    [SEASONS.FALL]: 4
   };
   return seasonMapping[season];
 }
 
 
 const checkIfHour = (value) => {
-  if (value === "morning") return 1;
-  if (value === 'afternoon') return 2;
-  if (value === 'evening') return 3;
+  if (value === DAY_TIME.MORNING) return 1;
+  if (value === DAY_TIME.AFTERNOON) return 2;
+  if (value === DAY_TIME.EVENING) return 3;
   else return value;
 }
 
@@ -72,14 +72,6 @@ const replaceWords = (rule, map) => {
   return rule;
 };
 
-const SENSORS = {
-  TEMPERATURE: 'temperature',
-  HOUR: 'hour',
-  HUMIDITY: 'humidity',
-  DISTANCE: 'distance',
-  SEASON: 'season',
-  SOIL: 'soil'
-}
 
 const DISCRETIZE_SENSORS_MAP = {
   [SENSORS.TEMPERATURE]: discretizeTemperature,
@@ -99,16 +91,18 @@ const UNDISCRETIZE_SENSORS_MAP = {
   [SENSORS.SEASON]: { 1: "winter", 2: "spring", 3: "summer", 4: "fall" },
 };
 
-const returnSeasonNumberByMonth = (currentMonth) =>{
+const getSeasonNumberByMonth = (currentMonth) =>{
   if (currentMonth >= 3 && currentMonth <= 5) {
-    season = 2; // Spring
+    return 2; // Spring
   } else if (currentMonth >= 6 && currentMonth <= 8) {
-    season = 3; // Summer
+    return 3; // Summer
   } else if (currentMonth >= 9 && currentMonth <= 11) {
-    season = 4; // Fall
+    return 4; // Fall
   } else {
-    season = 1; // Winter
+    return 1; // Winter
   }
+
+  
 }
 
 
@@ -125,5 +119,6 @@ module.exports = {
   replaceWords,
   DISCRETIZE_SENSORS_MAP,
   UNDISCRETIZE_SENSORS_MAP,
-  returnSeasonNumberByMonth
+  getSeasonNumberByMonth,
+  
 }

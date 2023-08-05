@@ -3,7 +3,8 @@ const Device = require("../models/Device");
 const { updateDeviceModeInDatabase } = require("../services/devices.service");
 const { addingDataToCsv } = require("../utils/machineLearning.js");
 const SensorValue = require("../models/SensorValue");
-const { returnSeasonNumberByMonth, discretizeHour } = require("../utils/utils");
+const { getSeasonNumberByMonth, discretizeHour } = require("../utils/utils");
+const { SENSORS } = require("../consts/common.consts");
 
 
 const test = 0;
@@ -134,21 +135,21 @@ const parseSensorAndWriteToMongo = async () => {
     const humidityValue = `VAR humidity=${humidity.toFixed(1)}`;
     const temperatureDocument = new SensorValue({
       value: temperatureValue,
-      sensor_type: "temperature",
+      sensor_type: SENSORS.TEMPERATURE,
     });
     const humidityDocument = new SensorValue({
       value: humidityValue,
-      sensor_type: "humidity",
+      sensor_type: SENSORS.HUMIDITY,
     });
 
     const currentDate = new Date();
     const currentMonth = currentDate.getMonth() + 1; // January is month 0, so we add 1 to get the correct month number
-    const season = returnSeasonNumberByMonth(currentMonth);
+    const season = getSeasonNumberByMonth(currentMonth);
 
     const seasonValue = `VAR season=${season}`;
     const seasonDocument = new SensorValue({
       value: seasonValue,
-      sensor_type: "season",
+      sensor_type: SENSORS.SEASON,
     });
 
     const currentHour = currentDate.getHours();
@@ -156,7 +157,7 @@ const parseSensorAndWriteToMongo = async () => {
     const timeOfTheDayValue = `VAR hour=${timeOfTheDay}`;
     const timeDocument = new SensorValue({
       value: timeOfTheDayValue,
-      sensor_type: "hour",
+      sensor_type: SENSORS.HOUR,
     });
 
     // TODO make sure soil will write to database!!!!

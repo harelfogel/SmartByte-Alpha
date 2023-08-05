@@ -1,6 +1,6 @@
 const SensorValue = require("../models/SensorValue");
 const _ = require("lodash");
-const { SENSORS } = require("../utils/common");
+const { SENSORS } = require("../consts/common.consts");
 
 const getLatestSensorValues = async () => {
   return _.reduce(

@@ -91,23 +91,6 @@ const switchHeaterState = async (state) => {
 }
 
 
-const SENSORS = {
-    TEMPERATURE: 'temperature',
-    HOUR: 'hour',
-    HUMIDITY: 'humidity',
-    DISTANCE: 'distance',
-    SEASON: 'season',
-    SOIL: 'soil'
-}
-
-const ML_DEVICES = {
-    LIGHTS: 'lights',
-    FAN: 'fan',
-    AC_STATUS: 'ac_status',
-    HEATER_SWITCH: 'heater_switch',
-    LAUNDRY_MATCHINE: 'laundry_machine',
-    PUMP: 'pump'
-}
 
 
 module.exports = {
@@ -115,6 +98,4 @@ module.exports = {
     getFunctionsFromDB,
     getHeaterState,
     activateDevices,
-    SENSORS,
-    ML_DEVICES
 }

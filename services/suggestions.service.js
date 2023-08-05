@@ -12,8 +12,8 @@ const Rule = require("../models/Rule");
 const {
   OPERATORS_FOTMATTER_TO_NORMALIZED,
 } = require("../consts/suggestions.consts");
-const { SENSORS, ML_DEVICES } = require("../utils/common");
 const _ = require("lodash");
+const { SENSORS, ML_DEVICES } = require("../consts/common.consts");
 
 const getComparisonOperator = (evidence, evidenceValues) => {
   const stats = calculateStats(evidenceValues);
