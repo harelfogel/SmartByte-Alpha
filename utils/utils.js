@@ -1,4 +1,4 @@
-const { SENSORS } = require("./common");
+// const { SENSORS } = require("./common");
 
 const discretizeTemperature = (temperature) => {
   if (temperature <= 15) {
@@ -72,6 +72,15 @@ const replaceWords = (rule, map) => {
   return rule;
 };
 
+const SENSORS = {
+  TEMPERATURE: 'temperature',
+  HOUR: 'hour',
+  HUMIDITY: 'humidity',
+  DISTANCE: 'distance',
+  SEASON: 'season',
+  SOIL: 'soil'
+}
+
 const DISCRETIZE_SENSORS_MAP = {
   [SENSORS.TEMPERATURE]: discretizeTemperature,
   [SENSORS.HUMIDITY]: discretizeHumidity,
@@ -82,6 +91,25 @@ const DISCRETIZE_SENSORS_MAP = {
 }
 
 
+const UNDISCRETIZE_SENSORS_MAP = {
+  [SENSORS.HOUR]: { 1: "morning", 2: "afternoon", 3: "evening" },
+  [SENSORS.TEMPERATURE]: { 1: 15, 2: 20, 3: 25, 4: 27 },
+  [SENSORS.HUMIDITY]: { 1: 30, 2: 60, 3: 90, 4: 100 },
+  [SENSORS.DISTANCE]: { 1: 0.01, 2: 20, 3: 100 },
+  [SENSORS.SEASON]: { 1: "winter", 2: "spring", 3: "summer", 4: "fall" },
+};
+
+const returnSeasonNumberByMonth = (currentMonth) =>{
+  if (currentMonth >= 3 && currentMonth <= 5) {
+    season = 2; // Spring
+  } else if (currentMonth >= 6 && currentMonth <= 8) {
+    season = 3; // Summer
+  } else if (currentMonth >= 9 && currentMonth <= 11) {
+    season = 4; // Fall
+  } else {
+    season = 1; // Winter
+  }
+}
 
 
 module.exports = {
@@ -95,5 +123,7 @@ module.exports = {
   createRegexPattern,
   discretizSoil,
   replaceWords,
-  DISCRETIZE_SENSORS_MAP
+  DISCRETIZE_SENSORS_MAP,
+  UNDISCRETIZE_SENSORS_MAP,
+  returnSeasonNumberByMonth
 }

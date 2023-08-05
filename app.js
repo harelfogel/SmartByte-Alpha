@@ -8,7 +8,6 @@ const {
   getAcState,
   getSensiboSensors,
   parseSensorAndWriteToMongo,
-  removeAllSensorValues,
   updateAcMode,
   updateSensiboMode,
   analyzeFunc,
@@ -72,7 +71,7 @@ const axios = require("axios");
 const schedule = require("node-schedule");
 const { toggleLaundry } = require("./api/smartThings.js");
 const { connectToWs } = require("./ws.js");
-const { getLatestSensorValues } = require("./services/sensorValues.service.js");
+const { getLatestSensorValues, removeAllSensorValues } = require("./services/sensorValues.service.js");
 const { detectMotion } = require("./services/motion.service.js");
 const { response } = require("express");
 const Device = require("./models/Device.js");
@@ -735,8 +734,7 @@ server.get('/devices/rooms/:deviceName', async (req, res) => {
 // }, 2000);
 
 setTimeout(async() => {
-  const latestValues = await getLatestSensorValues();
-  console.log({latestValues});
+  // parseSensorAndWriteToMongo()
 }, 2000)
 
 
@@ -749,7 +747,7 @@ setInterval(async () => {
   //   await removeSensorValueByType('humidity');
   //   await removeSensorValueByType('hour')
   //   await removeSensorValueByType('season')
-  //   await parseSensorAndWriteToMongo();
+    // await parseSensorAndWriteToMongo();
 }, 10 * 1000)
 
 

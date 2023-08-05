@@ -19,6 +19,16 @@ const getLatestSensorValues = async () => {
   );
 };
 
+
+const removeAllSensorValues = async () => {
+  try {
+    const result = await SensorValue.deleteMany({});
+  } catch (error) {
+    console.error(error);
+  }
+};
+
 module.exports = {
-  getLatestSensorValues
+  getLatestSensorValues,
+  removeAllSensorValues
 };

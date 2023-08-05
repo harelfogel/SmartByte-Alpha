@@ -5,73 +5,19 @@ require("dotenv").config();
 const { getDevices } = require("../services/devices.service.js");
 const { DateTime } = require("luxon");
 const { SENSORS, ML_DEVICES } = require("./common");
+const { DISCRETIZE_SENSORS_MAP } = require("./utils");
 
-function classifyHour(hour) {
-  if (hour >= 0 && hour < 12) {
-    // morning
-    return 1;
-  } else if (hour >= 12 && hour < 18) {
-    // afternoon
-    return 2;
-  } else {
-    //evening
-    return 3;
-  }
-}
-
-function classifyTemperature(temperature) {
-  if (temperature <= 15) {
-    return 1;
-  } else if (temperature > 15 && temperature <= 20) {
-    return 2;
-  } else if (temperature > 20 && temperature <= 25) {
-    return 3;
-  } else {
-    return 4;
-  }
-}
-
-function classifyHumidity(humidity) {
-  if (humidity <= 30) {
-    return 1;
-  } else if (humidity > 30 && humidity <= 60) {
-    return 2;
-  } else if (humidity > 60 && humidity <= 90) {
-    return 3;
-  } else {
-    return 4;
-  }
-}
-
-function classifyDistance(distance) {
-  if (distance <= 0.01) {
-    return 1;
-  } else if (distance > 0.01 && distance <= 20) {
-    return 2;
-  } else {
-    return 3;
-  }
-}
-
-function classifySeason(season) {
-  const seasonMapping = {
-    winter: 1,
-    spring: 2,
-    summer: 3,
-    fall: 4,
-  };
-  return seasonMapping[season];
-}
 
 async function callBayesianScript(requestData) {
-  // Classify numerical values into categorical values
-  const evidence = {
-    [SENSORS.HOUR]: classifyHour(requestData.hour),
-    [SENSORS.TEMPERATURE]: classifyTemperature(requestData.temperature),
-    [SENSORS.HUMIDITY]: classifyHumidity(requestData.humidity),
-    [SENSORS.DISTANCE]: classifyDistance(requestData.distance),
-    [SENSORS.SEASON]: classifySeason(requestData.season),
-  };
+
+  const evidence = Object.entries(DISCRETIZE_SENSORS_MAP)
+  .reduce((acc, curr) => {
+    return {
+      ...acc,
+      [curr[0]]: curr[1](requestData[curr[0]]) 
+    }   
+  }, {})
+
   try {
     const response = await axios.post(
       `${process.env.PYTHON_SERVER_URL}/recommend_device`,
@@ -91,24 +37,19 @@ async function callBayesianScript(requestData) {
 async function runBayesianScript() {
   console.log("Baysian Script is called!");
   try {
-    const devices = [
-      ML_DEVICES.LIGHTS,
-      ML_DEVICES.FAN,
-      ML_DEVICES.AC_STATUS,
-      ML_DEVICES.HEATER_SWITCH,
-      ML_DEVICES.LAUNDRY_MATCHINE,
-      ML_DEVICES.PUMP,
-    ];
-    const { temperature, humidity, distance } = await getLatestSensorValues();
+
+    const devices = Object.values(ML_DEVICES);
+    const latestSensorValues = await getLatestSensorValues();
     const { season, hour } = getCurrentSeasonAndHour();
+
+    
     const requestData = {
       devices,
-      distance,
-      temperature,
-      humidity,
-      season,
-      hour,
-    };
+      ...latestSensorValues,
+      [SENSORS.SEASON]: season,
+      [SENSORS.HOUR]: hour
+    }
+    
 
     const recommendation = await callBayesianScript(requestData);
     console.log(recommendation); // Do something with the recommendation
@@ -240,5 +181,4 @@ module.exports = {
   callBayesianScript,
   runBayesianScript,
   addingDataToCsv,
-  classifyHour,
 };
