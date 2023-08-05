@@ -1,3 +1,5 @@
+const { SENSORS } = require("./common");
+
 const discretizeTemperature = (temperature) => {
   if (temperature <= 15) {
     return 1;
@@ -46,35 +48,12 @@ function convertSeasonToNumber(season) {
 }
 
 
-const mapHour = (value) => {
-  if (value === 1) return 'morning (before 12 PM)';
-  if (value === 2) return 'afternoon (12 PM - 6 PM)';
-  return 'evening (after 6 PM)';
-};
-
 const checkIfHour = (value) => {
   if (value === "morning") return 1;
   if (value === 'afternoon') return 2;
   if (value === 'evening') return 3;
   else return value;
 }
-
-const mapHumidity = (value) => {
-  if (value === 1) return 'below 30%';
-  if (value === 2) return '30-60%';
-  if (value === 3) return '60-90%';
-  return 'above 90%';
-};
-
-
-const mapSeason = (value) => {
-  if (value === 1) return 'winter';
-  if (value === 2) return 'spring';
-  if (value === 3) return 'summer';
-  return 'fall';
-};
-
-
 
 
 const createRegexPattern = (words) => {
@@ -93,6 +72,15 @@ const replaceWords = (rule, map) => {
   return rule;
 };
 
+const DISCRETIZE_SENSORS_MAP = {
+  [SENSORS.TEMPERATURE]: discretizeTemperature,
+  [SENSORS.HUMIDITY]: discretizeHumidity,
+  [SENSORS.HOUR]: discretizeHour,
+  [SENSORS.SOIL]: discretizSoil,
+  [SENSORS.DISTANCE]: discretizeDistance,
+  [SENSORS.SEASON]: convertSeasonToNumber,
+}
+
 
 
 
@@ -103,11 +91,9 @@ module.exports = {
   discretizeHour,
   discretizeHumidity,
   convertSeasonToNumber,
-  mapHour,
-  mapHumidity,
-  mapSeason,
   checkIfHour,
   createRegexPattern,
   discretizSoil,
-  replaceWords
+  replaceWords,
+  DISCRETIZE_SENSORS_MAP
 }

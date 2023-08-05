@@ -94,6 +94,8 @@ const { Server } = require("ws");
 
 
 
+
+
 // Connect to MongoDB
 connectDB();
 
@@ -732,7 +734,10 @@ server.get('/devices/rooms/:deviceName', async (req, res) => {
 
 // }, 2000);
 
-
+setTimeout(async() => {
+  const latestValues = await getLatestSensorValues();
+  console.log({latestValues});
+}, 2000)
 
 
 setInterval(async () => {
