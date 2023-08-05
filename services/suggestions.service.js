@@ -15,23 +15,8 @@ const {
 const { clients } = require("../ws");
 const Rule = require("../models/Rule");
 const { OPERATORS_FOTMATTER_TO_NORMALIZED } = require("../consts/suggestions.consts");
+const { SENSORS, ML_DEVICES } = require("../utils/common");
 
-const temperatureMap = {
-  1: 15,
-  2: 20,
-  3: 27,
-  4: 35,
-};
-// const generateRule = (suggestion) => {
-//   const { device, evidence, state } = suggestion;
-//   const isAcDevice = device.toLowerCase() === "ac";
-//   const conditions = Object.entries(evidence)
-//     .map((condition, idx) => {
-//       const [key, value] = condition;
-//       return `${key} < ${temperatureMap[value]}`;
-//     })
-//     .join(" AND ");
-//   }
 
 const getComparisonOperator = (evidence, evidenceValues) => {
   const stats = calculateStats(evidenceValues);
@@ -77,11 +62,11 @@ const getActualEvidenceValue = async (strongestEvidence) => {
   const { season, hour } = getCurrentSeasonAndHour();
 
   const actualValues = {
-    temperature: latestSensorValues.temperature,
-    humidity: latestSensorValues.humidity,
-    distance_from_house: latestSensorValues.distance,
-    season,
-    hour,
+    [SENSORS.TEMPERATURE]: latestSensorValues.temperature,
+    [SENSORS.HUMIDITY]: latestSensorValues.humidity,
+    [SENSORS.DISTANCE]: latestSensorValues.distance,
+    [SENSORS.SEASON]: season,
+    [SENSORS.HOUR]: hour,
     soil: latestSensorValues.soil
   };
   return [actualValues[strongestEvidence.evidence]];
@@ -89,11 +74,11 @@ const getActualEvidenceValue = async (strongestEvidence) => {
 
 const mapEvidenceValue = (evidenceType) => {
   const evidenceMaps = {
-    hour: { 1: 'morning', 2: 'afternoon', 3: 'evening' },
-    temperature: { 1: 15, 2: 20, 3: 25, 4: 27 },
-    humidity: { 1: 30, 2: 60, 3: 90, 4: 100 },
-    distance_from_house: { 1: 0.01, 2: 20, 3: 100 },
-    season: { 1: 'winter', 2: 'spring', 3: 'summer', 4: 'fall' },
+    [SENSORS.HOUR]: { 1: 'morning', 2: 'afternoon', 3: 'evening' },
+    [SENSORS.TEMPERATURE]: { 1: 15, 2: 20, 3: 25, 4: 27 },
+    [SENSORS.HUMIDITY]: { 1: 30, 2: 60, 3: 90, 4: 100 },
+    [SENSORS.DISTANCE]: { 1: 0.01, 2: 20, 3: 100 },
+    [SENSORS.SEASON]: { 1: 'winter', 2: 'spring', 3: 'summer', 4: 'fall' },
   };
   if (evidenceType in evidenceMaps) {
     return evidenceMaps[evidenceType];
@@ -182,17 +167,17 @@ const discretizeValue = (evidenceType, actualValue) => {
     actualValue = parseFloat(arrOfNumbers.join("."));
   }
   switch (evidenceType) {
-    case 'temperature':
+    case SENSORS.TEMPERATURE:
       return discretizeTemperature(actualValue);
-    case 'humidity':
+    case SENSORS.HUMIDITY:
       return discretizeHumidity(actualValue);
-    case 'distance_from_house':
+    case SENSORS.DISTANCE:
       return discretizeDistance(actualValue);
-    case 'hour':
+    case SENSORS.HOUR:
       return discretizeHour(actualValue);
-    case 'season':
+    case SENSORS.SEASON:
       return convertSeasonToNumber(actualValue);
-    case 'soil':
+    case SENSORS.SOIL:
       return discretizSoil(actualValue)
     default:
       return undefined;
@@ -222,12 +207,12 @@ async function addSuggestionsToDatabase() {
     const currentDistance = latestSensorValues.distance;
     const currentSoil = latestSensorValues.soil;
     const devices = [
-      "lights",
-      "fan",
-      "ac_status",
-      "heater_switch",
-      "laundry_machine",
-      "pump"
+      ML_DEVICES.LIGHTS,
+      ML_DEVICES.FAN,
+      ML_DEVICES.AC_STATUS,
+      ML_DEVICES.HEATER_SWITCH,
+      ML_DEVICES.LAUNDRY_MATCHINE,
+      ML_DEVICES.PUMP
     ];
     
     const numberPattern = /\d+/g;
@@ -237,12 +222,12 @@ async function addSuggestionsToDatabase() {
     const currentSoilValue = currentSoil.match(numberPattern);
 
     const evidence = {
-      temperature: 2,
-      humidity: 1,
-      distance_from_house: 1,
-      season: 2,
-      hour:  3,
-      soil: 2
+      [SENSORS.TEMPERATURE]: currentTemperatureValue,
+      [SENSORS.HUMIDITY]: currentHumidityValue,
+      [SENSORS.DISTANCE]: currentDistanceValue,
+      [SENSORS.SEASON]: season,
+      [SENSORS.HOUR]:hour,
+      [SENSORS.SOIL]: currentSoilValue
     };
 
     

@@ -11,6 +11,8 @@ const options = {
 
 // Create a client instance
 const client = mqtt.connect('mqtts://' + process.env.MQTT_URL, options);
+const { clients: uiClients } = require("../ws");
+
 
 client.once('connect', function () {
     console.log('MQTT connected');
@@ -52,6 +54,10 @@ function controlPump(state) {
     const message = state;
 
     console.log(`Sending message: ${message} to topic: ${topic}`);  // Add this line
+
+    uiClients.forEach((client) => {
+        client.send("TEST PUMP");
+      });
 
     client.publish(topic, message, function (err) {
         if (err) {

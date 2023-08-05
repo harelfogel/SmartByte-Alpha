@@ -52,13 +52,6 @@ const mapHour = (value) => {
   return 'evening (after 6 PM)';
 };
 
-const mapTemperature = (value) => {
-  if (value === 1) return 'below 15°C';
-  if (value === 2) return '15-20°C';
-  if (value === 3) return '20-27°C';
-  return 'above 27°C';
-};
-
 const checkIfHour = (value) => {
   if (value === "morning") return 1;
   if (value === 'afternoon') return 2;
@@ -73,11 +66,6 @@ const mapHumidity = (value) => {
   return 'above 90%';
 };
 
-const mapDistance = (value) => {
-  if (value === 1) return 'below or equal to 0.01 units';
-  if (value === 2) return '0.01-20 units';
-  return 'above 20 units';
-};
 
 const mapSeason = (value) => {
   if (value === 1) return 'winter';
@@ -116,10 +104,8 @@ module.exports = {
   discretizeHumidity,
   convertSeasonToNumber,
   mapHour,
-  mapDistance,
   mapHumidity,
   mapSeason,
-  mapTemperature,
   checkIfHour,
   createRegexPattern,
   discretizSoil,

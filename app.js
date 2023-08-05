@@ -25,6 +25,7 @@ const {
   getFunctionsFromDB,
   getHeaterState,
   activateDevices,
+  ML_DEVICES,
 } = require("./utils/common.js");
 const {
   insertRuleToDB,
@@ -154,9 +155,8 @@ server.post("/notifyadmin", async (req, res) => {
 
 // --------------------------------- user roles ---------------------------------
 
-// server-side code (Node.js)
 server.get("/user-role", (req, res) => {
-  res.json({ role: "admin" }); // Replace 'admin' with the actual role based on your authentication logic
+  res.json({ role: "admin" }); 
 });
 
 // --------------------------------- Sensors ---------------------------------
@@ -548,14 +548,15 @@ server.get("/update_data", async (req, res) => {
 
 // --------------------------------- Machine Learnign-Recoomnadations ---------------------------------
 server.get("/recommend_device", async (req, res) => {
+  
   try {
     const devices = [
-      "heater_switch",
-      "lights",
-      "ac_status",
-      "fan",
-      "laundry_machine",
-      "pump"
+      ML_DEVICES.LIGHTS,
+      ML_DEVICES.FAN,
+      ML_DEVICES.AC_STATUS,
+      ML_DEVICES.HEATER_SWITCH,
+      ML_DEVICES.LAUNDRY_MATCHINE,
+      ML_DEVICES.PUMP
     ];
     const { temperature, humidity, distance } = await getLatestSensorValues();
     const { season, hour } = getCurrentSeasonAndHour();
